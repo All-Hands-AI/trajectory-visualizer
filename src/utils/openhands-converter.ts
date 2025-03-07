@@ -55,7 +55,8 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[]): OpenHa
         metadata: {},
         actorType: getActorType(event.source),
         command: '',
-        path: ''
+        path: '',
+        content: ''
       };
 
       // Add command for execute_bash action
@@ -68,21 +69,35 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[]): OpenHa
         entry.path = event.args.path;
       }
 
+      // Add thought content for think action
+      if (event.action === 'think' && event.args?.thought) {
+        entry.content = event.args.thought;
+      }
+
       // Add any tool metadata
       if (event.tool_call_metadata) {
-        entry.metadata = {
-          tool_name: event.tool_call_metadata.tool_name,
-          ...event.tool_call_metadata.tool_args
-        };
+        const metadata: Record<string, any> = {};
+        if ('function_name' in event.tool_call_metadata) {
+          metadata.tool_name = event.tool_call_metadata.function_name;
+          if ('tool_args' in event.tool_call_metadata) {
+            Object.assign(metadata, event.tool_call_metadata.tool_args);
+          }
+        } else if ('tool_name' in event.tool_call_metadata) {
+          metadata.tool_name = event.tool_call_metadata.tool_name;
+          if ('tool_args' in event.tool_call_metadata) {
+            Object.assign(metadata, event.tool_call_metadata.tool_args);
+          }
+        }
+        entry.metadata = metadata;
       }
 
       entries.push(entry as TimelineEntry);
-    } else if (event.observation) {
-      // This is an observation event
+    } else {
+      // This is an observation event or a message without action
       const entry = {
         type: event.observation === 'user_message' || event.observation === 'assistant_message' ? 'message' : getObservationType(event.observation, event.success),
         timestamp: event.timestamp || new Date().toISOString(),
-        title: event.message || event.observation,
+        title: event.message || event.observation || '',
         content: event.content || '',
         metadata: event.extras || {},
         actorType: getActorType(event.source),
@@ -106,12 +121,14 @@ function getActionType(action: string): TimelineEntry['type'] {
     case 'web_read':
     case 'browser':
       return 'search';
+    case 'think':
+      return 'message';
     default:
       return 'message';
   }
 }
 
-function getObservationType(_observation: string, success?: boolean): TimelineEntry['type'] {
+function getObservationType(_observation: string | undefined, success?: boolean): TimelineEntry['type'] {
   if (success === false) {
     return 'error';
   }
