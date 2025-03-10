@@ -29,7 +29,7 @@ describe('UploadTrajectory', () => {
     expect(screen.getByText(/drag and drop a trajectory file here/i)).toBeInTheDocument();
   });
 
-  it('handles file upload', async () => {
+  it('handles old format correctly', async () => {
     render(<UploadTrajectory onUpload={mockOnUpload} />);
 
     const file = new File([
@@ -57,6 +57,50 @@ describe('UploadTrajectory', () => {
               args: { command: 'ls' }
             }
           ]
+        }
+      });
+    });
+  });
+
+  it('handles new format correctly', async () => {
+    render(<UploadTrajectory onUpload={mockOnUpload} />);
+
+    const newFormatData = {
+      entries: [
+        {
+          id: 1,
+          timestamp: '2025-03-07T17:45:00.000Z',
+          type: 'message',
+          content: 'Hello, I need help with my code.',
+          actorType: 'User'
+        },
+        {
+          id: 2,
+          timestamp: '2025-03-07T17:45:10.000Z',
+          type: 'thought',
+          content: 'Let me analyze the code and identify potential issues.',
+          actorType: 'Assistant'
+        }
+      ]
+    };
+
+    const file = new File(
+      [JSON.stringify(newFormatData)],
+      'trajectory.json',
+      { type: 'application/json' }
+    );
+
+    const dropzone = screen.getByText(/drag and drop a trajectory file here/i).parentElement!.parentElement!;
+    const dropEvent = createDropEvent([file]);
+
+    await act(async () => {
+      fireEvent.drop(dropzone, dropEvent);
+    });
+
+    await waitFor(() => {
+      expect(mockOnUpload).toHaveBeenCalledWith({
+        content: {
+          trajectory: newFormatData
         }
       });
     });

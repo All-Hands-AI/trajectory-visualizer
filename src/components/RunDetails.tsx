@@ -46,11 +46,24 @@ const RunDetails: React.FC<RunDetailsProps> = ({ owner, repo, run, initialConten
 
   // Create a reference for timelineEntries for use in multiple places
   const getTimelineEntries = useCallback(() => {
-    // Check if this is an OpenHands trajectory
-    if (artifactContent?.content?.trajectory) {
-      return convertOpenHandsTrajectory(artifactContent.content.trajectory);
+    try {
+      // Check if this is an OpenHands trajectory
+      if (artifactContent?.content?.trajectory) {
+        return convertOpenHandsTrajectory(artifactContent.content.trajectory);
+      }
+      return artifactContent?.content?.history || artifactContent?.content?.jsonlHistory || [];
+    } catch (error) {
+      console.error('Failed to convert trajectory:', error);
+      return [{
+        type: 'error',
+        timestamp: new Date().toISOString(),
+        title: 'Error Processing Trajectory',
+        content: `Failed to process trajectory: ${error instanceof Error ? error.message : 'Unknown error'}. The trajectory visualizer accepts the following formats:\n\n1. Array of events with action, args, timestamp, etc.\n2. Object with "entries" array containing events\n3. Object with "test_result.git_patch" containing a git patch`,
+        actorType: 'System',
+        command: '',
+        path: ''
+      }];
     }
-    return artifactContent?.content?.history || artifactContent?.content?.jsonlHistory || [];
   }, [artifactContent]);
 
   // Direct keyboard navigation for timeline steps

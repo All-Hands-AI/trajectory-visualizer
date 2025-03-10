@@ -27,7 +27,95 @@ function getActorType(source: string | undefined): 'User' | 'Assistant' | 'Syste
   return 'Assistant';
 }
 
-export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[]): OpenHandsTimelineEntry[] {
+interface HistoryEntry {
+  id: number;
+  timestamp: string;
+  source: string;
+  message: string;
+  action: string;
+  args: {
+    content?: string;
+    path?: string;
+    command?: string;
+  };
+}
+
+interface HistoryFormat {
+  history: HistoryEntry[];
+}
+
+export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entries: OpenHandsEvent[] } | { test_result: { git_patch: string } } | HistoryFormat): OpenHandsTimelineEntry[] {
+  // Handle different formats
+  let events: OpenHandsEvent[];
+  
+  if (Array.isArray(trajectory)) {
+    events = trajectory;
+  } else if ('entries' in trajectory) {
+    events = trajectory.entries;
+  } else if ('history' in trajectory && Array.isArray(trajectory.history)) {
+    // Convert history entries to timeline format
+    return (trajectory as HistoryFormat).history.map(entry => {
+      const timelineEntry: TimelineEntry = {
+        type: entry.action === 'read' ? 'search' : entry.action === 'message' ? 'message' : 'command',
+        timestamp: entry.timestamp,
+        title: entry.message,
+        content: entry.args?.content || entry.message,
+        actorType: entry.source === 'user' ? 'User' : entry.source === 'agent' ? 'Assistant' : 'System',
+        command: '',
+        path: entry.args?.path || ''
+      };
+
+      // Add command for execute_bash action
+      if (entry.action === 'execute_bash' && entry.args?.command) {
+        timelineEntry.command = entry.args.command;
+      }
+
+      // Add path for str_replace_editor action
+      if (entry.action === 'str_replace_editor' && entry.args?.path) {
+        timelineEntry.path = entry.args.path;
+      }
+
+      return timelineEntry;
+    });
+  } else if ('test_result' in trajectory && 'git_patch' in trajectory.test_result) {
+    // Convert git patch to timeline entries
+    const entries: TimelineEntry[] = [];
+
+    // Add git patch entry
+    entries.push({
+      type: 'message',
+      timestamp: new Date().toISOString(),
+      title: 'Git Patch',
+      content: trajectory.test_result.git_patch,
+      actorType: 'System',
+      command: '',
+      path: ''
+    } as TimelineEntry);
+
+    // Add file changes
+    const patch = trajectory.test_result.git_patch;
+    const fileMatches = patch.matchAll(/^diff --git a\/(.*?) b\/(.*?)$/gm);
+    for (const match of fileMatches) {
+      const file = match[1];
+      entries.push({
+        type: 'edit',
+        timestamp: new Date().toISOString(),
+        title: `Changes in ${file}`,
+        content: '',
+        actorType: 'System',
+        command: '',
+        path: file
+      } as TimelineEntry);
+    }
+
+    return entries;
+  } else {
+    throw new Error('Invalid trajectory format. Expected one of:\n1. Array of events with action, args, timestamp, etc.\n2. Object with "entries" array containing events\n3. Object with "history" array containing events\n4. Object with "test_result.git_patch" containing a git patch');
+  }
+
+  if (!Array.isArray(events)) {
+    throw new Error('Invalid trajectory format. Events must be an array.');
+  }
   // First entry is always a message showing the start
   const entries: OpenHandsTimelineEntry[] = [{
     type: 'message',
@@ -39,7 +127,7 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[]): OpenHa
     path: ''
   } as TimelineEntry];
 
-  for (const event of trajectory) {
+  for (const event of events) {
     // Skip environment state changes
     if (event.source === 'environment' && event.observation === 'agent_state_changed') {
       continue;

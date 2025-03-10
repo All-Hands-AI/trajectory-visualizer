@@ -259,6 +259,168 @@ describe('OpenHands Trajectory Converter', () => {
     });
   });
 
+  it('should handle new format with entries array', () => {
+    const newFormatData = {
+      entries: [
+        {
+          id: 1,
+          timestamp: '2025-03-07T17:45:00.000Z',
+          type: 'message',
+          content: 'Hello, I need help with my code.',
+          source: 'user',
+          observation: 'user_message'
+        },
+        {
+          id: 2,
+          timestamp: '2025-03-07T17:45:10.000Z',
+          type: 'thought',
+          content: 'Let me analyze the code and identify potential issues.',
+          source: 'assistant',
+          observation: 'assistant_message'
+        }
+      ]
+    };
+
+    const result = convertOpenHandsTrajectory(newFormatData);
+
+    // First entry is always a system message
+    expect(result[0]).toMatchObject({
+      type: 'message',
+      actorType: 'System',
+      title: 'Starting trajectory visualization'
+    });
+
+    // Second entry is the user message
+    expect(result[1]).toMatchObject({
+      type: 'message',
+      timestamp: '2025-03-07T17:45:00.000Z',
+      content: 'Hello, I need help with my code.',
+      actorType: 'User'
+    });
+
+    // Third entry is the assistant message
+    expect(result[2]).toMatchObject({
+      type: 'message',
+      timestamp: '2025-03-07T17:45:10.000Z',
+      content: 'Let me analyze the code and identify potential issues.',
+      actorType: 'Assistant'
+    });
+  });
+
+  it('should handle history format', () => {
+    const historyData = {
+      history: [
+        {
+          id: 0,
+          timestamp: '2025-03-07T17:45:00.000Z',
+          source: 'user',
+          message: 'Hello, I need help with my code.',
+          action: 'message',
+          args: {
+            content: 'Hello, I need help with my code.'
+          }
+        },
+        {
+          id: 1,
+          timestamp: '2025-03-07T17:45:10.000Z',
+          source: 'agent',
+          message: 'Let me check the code.',
+          action: 'read',
+          args: {
+            path: '/workspace/code.py',
+            content: 'def hello():\n    print("Hello")'
+          }
+        },
+        {
+          id: 2,
+          timestamp: '2025-03-07T17:45:20.000Z',
+          source: 'agent',
+          message: 'Running tests',
+          action: 'execute_bash',
+          args: {
+            command: 'python -m pytest'
+          }
+        }
+      ]
+    };
+
+    const entries = convertOpenHandsTrajectory(historyData);
+    
+    // First entry is a message
+    expect(entries[0]).toMatchObject({
+      type: 'message',
+      timestamp: '2025-03-07T17:45:00.000Z',
+      title: 'Hello, I need help with my code.',
+      content: 'Hello, I need help with my code.',
+      actorType: 'User'
+    });
+
+    // Second entry is a search (read)
+    expect(entries[1]).toMatchObject({
+      type: 'search',
+      timestamp: '2025-03-07T17:45:10.000Z',
+      title: 'Let me check the code.',
+      content: 'def hello():\n    print("Hello")',
+      actorType: 'Assistant',
+      path: '/workspace/code.py'
+    });
+
+    // Third entry is a command
+    expect(entries[2]).toMatchObject({
+      type: 'command',
+      timestamp: '2025-03-07T17:45:20.000Z',
+      title: 'Running tests',
+      actorType: 'Assistant',
+      command: 'python -m pytest'
+    });
+  });
+
+  it('should handle git patch format', () => {
+    const gitPatchData = {
+      test_result: {
+        git_patch: 'diff --git a/file1.txt b/file1.txt\nindex 123..456 789\n--- a/file1.txt\n+++ b/file1.txt\n@@ -1,1 +1,1 @@\n-old\n+new\ndiff --git a/file2.txt b/file2.txt\nindex 789..012 345\n--- a/file2.txt\n+++ b/file2.txt\n@@ -1,1 +1,1 @@\n-foo\n+bar'
+      }
+    };
+
+    const entries = convertOpenHandsTrajectory(gitPatchData);
+    expect(entries).toHaveLength(3); // Git patch message + 2 file changes
+
+    // First entry is the git patch
+    expect(entries[0]).toMatchObject({
+      type: 'message',
+      title: 'Git Patch',
+      content: gitPatchData.test_result.git_patch,
+      actorType: 'System'
+    });
+
+    // Second entry is the first file change
+    expect(entries[1]).toMatchObject({
+      type: 'edit',
+      title: 'Changes in file1.txt',
+      path: 'file1.txt',
+      actorType: 'System'
+    });
+
+    // Third entry is the second file change
+    expect(entries[2]).toMatchObject({
+      type: 'edit',
+      title: 'Changes in file2.txt',
+      path: 'file2.txt',
+      actorType: 'System'
+    });
+  });
+
+  it('should handle invalid formats with error', () => {
+    // Invalid format - not an array or object with entries
+    expect(() => convertOpenHandsTrajectory({} as any)).toThrow('Invalid trajectory format');
+
+    // Invalid format - entries is not an array
+    expect(() => convertOpenHandsTrajectory({ entries: 'not an array' } as any)).toThrow('Events must be an array');
+
+    // Invalid format - test_result without git_patch
+    expect(() => convertOpenHandsTrajectory({ test_result: {} } as any)).toThrow('Invalid trajectory format');
+  });
+
   it('should correctly process the message "Please read the README" through all steps', () => {
     // Step 1: Test the raw trajectory entry
     const trajectoryEntry = {

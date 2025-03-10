@@ -38,17 +38,16 @@ export const Timeline: React.FC<TimelineProps> = ({
     <div className="h-full py-1 px-2">
       <div ref={timelineContainerRef}>
         {/* Empty state */}
-        {entries.length <= 1 && (
+        {entries.length === 0 && (
           <div className="p-4 text-center text-gray-500">
             No timeline entries available
           </div>
         )}
 
-        {/* Timeline entries - Skip the first step (index 0) */}
+        {/* Timeline entries */}
         <div>
-          {entries.slice(1).map((entry, index) => {
-            // Add 1 to index since we're slicing from index 1
-            const realIndex = index + 1;
+          {entries.map((entry, index) => {
+            const realIndex = index;
             return (
               <div
                 key={realIndex}
