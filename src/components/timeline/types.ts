@@ -9,8 +9,10 @@ export interface TimelineEntry {
   actorType?: 'User' | 'Assistant' | 'System';
   metadata?: {
     cost?: number;
+    screenshot?: string;
     [key: string]: any;
   };
+  screenshot?: string;
 }
 
 export type StepColor = 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple' | 'indigo';

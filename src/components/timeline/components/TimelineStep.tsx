@@ -82,6 +82,15 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
                   <MarkdownContent content={entry.content} />
                 </div>
               )}
+              {entry.metadata?.screenshot && (
+                 <div className="mt-2">
+                   <img
+                     src={entry.metadata.screenshot}
+                     alt="Screenshot"
+                     className="max-w-full rounded-md shadow-sm ring-1 ring-black/5 dark:ring-white/5"
+                   />
+                 </div>
+               )}
               {entry.command && (
                 <CommandBlock command={entry.command} onCopy={onCommandClick} />
               )}
