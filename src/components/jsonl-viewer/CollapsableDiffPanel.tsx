@@ -24,35 +24,34 @@ const parseGitDiff = (diffContent: string): GitDiffFile[] => {
   if (!diffContent) return [];
   
   const files: GitDiffFile[] = [];
-  // Split the diff content by file
-  const fileChunks = diffContent.split(/^diff --git /m).filter(chunk => chunk.trim().length > 0);
   
-  for (const chunk of fileChunks) {
-    // Add back the "diff --git" prefix that was removed by the split
-    const fileContent = `diff --git ${chunk}`;
-    
-    // Extract file names
-    const fileHeaderMatch = fileContent.match(/^diff --git a\/(.*?) b\/(.*?)$/m);
-    if (!fileHeaderMatch) continue;
-    
-    const oldFile = fileHeaderMatch[1];
-    const newFile = fileHeaderMatch[2];
+  // Split the diff content by file
+  const fileRegex = /^diff --git a\/(.*?) b\/(.*?)$([\s\S]*?)(?=^diff --git|\Z)/gm;
+  let fileMatch;
+  
+  while ((fileMatch = fileRegex.exec(diffContent)) !== null) {
+    const oldFile = fileMatch[1];
+    const newFile = fileMatch[2];
+    const fileContent = fileMatch[0];
     
     // Extract hunks
     const hunks = [];
-    const hunkMatches = [...fileContent.matchAll(/^(@@ -\d+,\d+ \+\d+,\d+ @@.*)(?:\n(?!diff --git|@@).*)*$/gms)];
+    const hunkRegex = /@@ -(\d+),(\d+) \+(\d+),(\d+) @@([\s\S]*?)(?=@@ -|\Z)/g;
+    let hunkMatch;
     
-    for (const hunkMatch of hunkMatches) {
-      const hunkHeader = hunkMatch[0].match(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@/);
-      if (!hunkHeader) continue;
+    while ((hunkMatch = hunkRegex.exec(fileContent)) !== null) {
+      const oldStart = parseInt(hunkMatch[1], 10);
+      const oldLines = parseInt(hunkMatch[2], 10);
+      const newStart = parseInt(hunkMatch[3], 10);
+      const newLines = parseInt(hunkMatch[4], 10);
       
-      const oldStart = parseInt(hunkHeader[1], 10);
-      const oldLines = parseInt(hunkHeader[2], 10);
-      const newStart = parseInt(hunkHeader[3], 10);
-      const newLines = parseInt(hunkHeader[4], 10);
+      // Extract the actual changes (lines starting with + or -)
+      const changes = hunkMatch[5].split('\n')
+        .filter(line => line.startsWith('+') || line.startsWith('-') || line.startsWith(' '))
+        .join('\n');
       
-      // Get the content for this hunk (including the header)
-      const hunkContent = hunkMatch[0];
+      // Create a proper diff format for the hunk
+      const hunkContent = `@@ -${oldStart},${oldLines} +${newStart},${newLines} @@\n${changes}`;
       
       hunks.push({
         oldStart,
@@ -63,14 +62,48 @@ const parseGitDiff = (diffContent: string): GitDiffFile[] => {
       });
     }
     
-    files.push({
-      oldFile,
-      newFile,
-      hunks
-    });
+    // Only add files that have hunks
+    if (hunks.length > 0) {
+      files.push({
+        oldFile,
+        newFile,
+        hunks
+      });
+    }
   }
   
   return files;
+};
+
+// Helper functions to extract old and new content from hunks
+const extractOldContent = (hunks: { content: string }[]): string => {
+  let content = '';
+  
+  for (const hunk of hunks) {
+    const lines = hunk.content.split('\n');
+    for (const line of lines) {
+      if (line.startsWith('-') || line.startsWith(' ')) {
+        content += line.substring(1) + '\n';
+      }
+    }
+  }
+  
+  return content;
+};
+
+const extractNewContent = (hunks: { content: string }[]): string => {
+  let content = '';
+  
+  for (const hunk of hunks) {
+    const lines = hunk.content.split('\n');
+    for (const line of lines) {
+      if (line.startsWith('+') || line.startsWith(' ')) {
+        content += line.substring(1) + '\n';
+      }
+    }
+  }
+  
+  return content;
 };
 
 export const CollapsableDiffPanel: React.FC<CollapsableDiffPanelProps> = ({ instancePatch, gitPatch }) => {
@@ -115,10 +148,10 @@ export const CollapsableDiffPanel: React.FC<CollapsableDiffPanelProps> = ({ inst
                     <div className="bg-gray-50 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300">
                       {file.newFile}
                     </div>
-                    {/* Extract the content for this specific file from the patch */}
+                    {/* Create a proper diff view with old and new content */}
                     <DiffViewer 
-                      oldStr="" 
-                      newStr={file.hunks.map(hunk => hunk.content).join('\n')} 
+                      oldStr={extractOldContent(file.hunks)} 
+                      newStr={extractNewContent(file.hunks)} 
                       splitView={true} 
                     />
                   </div>
@@ -137,10 +170,10 @@ export const CollapsableDiffPanel: React.FC<CollapsableDiffPanelProps> = ({ inst
                     <div className="bg-gray-50 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300">
                       {file.newFile}
                     </div>
-                    {/* Extract the content for this specific file from the patch */}
+                    {/* Create a proper diff view with old and new content */}
                     <DiffViewer 
-                      oldStr="" 
-                      newStr={file.hunks.map(hunk => hunk.content).join('\n')} 
+                      oldStr={extractOldContent(file.hunks)} 
+                      newStr={extractNewContent(file.hunks)} 
                       splitView={true} 
                     />
                   </div>
