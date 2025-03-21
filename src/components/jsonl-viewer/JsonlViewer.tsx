@@ -5,6 +5,7 @@ import { getNestedValue, formatValueForDisplay } from '../../utils/object-utils'
 import { TrajectoryItem } from '../../types/share';
 import JsonVisualizer from '../json-visualizer/JsonVisualizer';
 import { DEFAULT_JSONL_VIEWER_SETTINGS } from '../../config/jsonl-viewer-config';
+import { DiffViewer } from '../diff-viewer';
 import {
   isAgentStateChange,
   isUserMessage,
@@ -356,7 +357,30 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
           </div>
           <div className="flex-1 overflow-y-auto scrollbar scrollbar-w-1.5 scrollbar-thumb-gray-200/75 dark:scrollbar-thumb-gray-700/75 scrollbar-track-transparent hover:scrollbar-thumb-gray-300/75 dark:hover:scrollbar-thumb-gray-600/75 scrollbar-thumb-rounded p-3">
             {currentEntryWithoutHistory ? (
-              <JsonVisualizer data={currentEntryWithoutHistory} initialExpanded={true} />
+              <div className="space-y-4">
+                {/* Instance Patch Diff Viewer */}
+                {entries[currentEntryIndex]?.instance?.patch && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Instance Patch</h4>
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                      <DiffViewer oldStr="" newStr={entries[currentEntryIndex].instance.patch} splitView={false} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Git Patch Diff Viewer */}
+                {entries[currentEntryIndex]?.test_result?.git_patch && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Git Patch</h4>
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                      <DiffViewer oldStr="" newStr={entries[currentEntryIndex].test_result.git_patch} splitView={false} />
+                    </div>
+                  </div>
+                )}
+
+                {/* JSON Visualizer for other metadata */}
+                <JsonVisualizer data={currentEntryWithoutHistory} initialExpanded={true} />
+              </div>
             ) : (
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 No metadata available
