@@ -60,6 +60,8 @@ The Trajectory Visualizer is a web application for visualizing OpenHands Resolve
 - It parses git diff format to extract file information
 - It displays the diffs in a more readable format with file names and changes
 - It provides more space for displaying diffs compared to the Entry Metadata panel
+- It uses helper functions `extractOldContent` and `extractNewContent` to properly parse git diff format
+- It displays "Groundtruth Patch" instead of "Instance Patch" in the UI (while keeping the field name the same)
 
 ### Data Flow
 1. Timeline entries are loaded from the artifact content
