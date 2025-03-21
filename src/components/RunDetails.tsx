@@ -134,12 +134,38 @@ const RunDetails: React.FC<RunDetailsProps> = ({ owner, repo, run, initialConten
     if (timelineEntries && timelineEntries.length > selectedStepIndex) {
       const entry = timelineEntries[selectedStepIndex];
       
-      // Show file changes in an alert for now
-      if (entry.path) {
-        alert(`File: ${entry.path}\n\nChanges are not available in this view. This would typically show a diff of the changes made to the file.`);
+      // If the entry has a path and metadata with file edit information, we can show it
+      if (entry.path && entry.metadata) {
+        // Check if there's a patch in the metadata
+        if (entry.metadata.instance?.patch || entry.metadata.test_result?.git_patch) {
+          // The diff viewer will be shown in the ArtifactDetails component
+          // We just need to make sure the metadata is available in the artifactContent
+          if (!artifactContent) {
+            // If no artifact content exists, create a minimal one with just the patch data
+            setArtifactContent({
+              content: {
+                instance: entry.metadata.instance,
+                test_result: entry.metadata.test_result
+              }
+            });
+          } else if (artifactContent.content) {
+            // If artifact content exists, update it with the patch data
+            setArtifactContent({
+              ...artifactContent,
+              content: {
+                ...artifactContent.content,
+                instance: entry.metadata.instance,
+                test_result: entry.metadata.test_result
+              }
+            });
+          }
+        } else {
+          // No patch data available
+          alert(`File: ${entry.path}\n\nNo diff information available for this file edit.`);
+        }
       }
     }
-  }, [getTimelineEntries, selectedStepIndex]);
+  }, [getTimelineEntries, selectedStepIndex, artifactContent]);
 
   const handleArtifactSelect = useCallback(async (artifact: Artifact) => {
     if (!artifact) return;
