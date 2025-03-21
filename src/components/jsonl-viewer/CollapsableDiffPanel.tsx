@@ -24,38 +24,35 @@ const parseGitDiff = (diffContent: string): GitDiffFile[] => {
   if (!diffContent) return [];
   
   const files: GitDiffFile[] = [];
-  const fileRegex = /^diff --git a\/(.*?) b\/(.*?)$/gm;
-  const hunkRegex = /^@@ -(\d+),(\d+) \+(\d+),(\d+) @@/gm;
+  // Split the diff content by file
+  const fileChunks = diffContent.split(/^diff --git /m).filter(chunk => chunk.trim().length > 0);
   
-  let fileMatch;
-  while ((fileMatch = fileRegex.exec(diffContent)) !== null) {
-    const oldFile = fileMatch[1];
-    const newFile = fileMatch[2];
+  for (const chunk of fileChunks) {
+    // Add back the "diff --git" prefix that was removed by the split
+    const fileContent = `diff --git ${chunk}`;
     
-    // Get the content for this file diff
-    const nextFileMatch = fileRegex.exec(diffContent);
-    const endPos = nextFileMatch ? nextFileMatch.index : diffContent.length;
-    fileRegex.lastIndex = nextFileMatch ? nextFileMatch.index : diffContent.length;
+    // Extract file names
+    const fileHeaderMatch = fileContent.match(/^diff --git a\/(.*?) b\/(.*?)$/m);
+    if (!fileHeaderMatch) continue;
     
-    const fileDiffContent = diffContent.substring(fileMatch.index, endPos);
+    const oldFile = fileHeaderMatch[1];
+    const newFile = fileHeaderMatch[2];
     
     // Extract hunks
     const hunks = [];
-    let hunkMatch;
-    hunkRegex.lastIndex = 0;
+    const hunkMatches = [...fileContent.matchAll(/^(@@ -\d+,\d+ \+\d+,\d+ @@.*)(?:\n(?!diff --git|@@).*)*$/gms)];
     
-    while ((hunkMatch = hunkRegex.exec(fileDiffContent)) !== null) {
-      const oldStart = parseInt(hunkMatch[1], 10);
-      const oldLines = parseInt(hunkMatch[2], 10);
-      const newStart = parseInt(hunkMatch[3], 10);
-      const newLines = parseInt(hunkMatch[4], 10);
+    for (const hunkMatch of hunkMatches) {
+      const hunkHeader = hunkMatch[0].match(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@/);
+      if (!hunkHeader) continue;
       
-      // Get the content for this hunk
-      const nextHunkMatch = hunkRegex.exec(fileDiffContent);
-      const hunkEndPos = nextHunkMatch ? nextHunkMatch.index : fileDiffContent.length;
-      hunkRegex.lastIndex = nextHunkMatch ? nextHunkMatch.index : fileDiffContent.length;
+      const oldStart = parseInt(hunkHeader[1], 10);
+      const oldLines = parseInt(hunkHeader[2], 10);
+      const newStart = parseInt(hunkHeader[3], 10);
+      const newLines = parseInt(hunkHeader[4], 10);
       
-      const hunkContent = fileDiffContent.substring(hunkMatch.index, hunkEndPos);
+      // Get the content for this hunk (including the header)
+      const hunkContent = hunkMatch[0];
       
       hunks.push({
         oldStart,
@@ -108,17 +105,22 @@ export const CollapsableDiffPanel: React.FC<CollapsableDiffPanelProps> = ({ inst
       {/* Content */}
       {isExpanded && (
         <div className="p-4 space-y-4">
-          {/* Instance Patch */}
+          {/* Instance Patch (displayed as Groundtruth patch) */}
           {instancePatch && (
             <div>
-              <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Instance Patch</h3>
+              <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Groundtruth Patch</h3>
               <div className="space-y-4">
                 {instanceFiles.map((file, index) => (
                   <div key={`instance-${index}`} className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
                     <div className="bg-gray-50 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300">
                       {file.newFile}
                     </div>
-                    <DiffViewer oldStr="" newStr={instancePatch} splitView={true} />
+                    {/* Extract the content for this specific file from the patch */}
+                    <DiffViewer 
+                      oldStr="" 
+                      newStr={file.hunks.map(hunk => hunk.content).join('\n')} 
+                      splitView={true} 
+                    />
                   </div>
                 ))}
               </div>
@@ -135,7 +137,12 @@ export const CollapsableDiffPanel: React.FC<CollapsableDiffPanelProps> = ({ inst
                     <div className="bg-gray-50 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300">
                       {file.newFile}
                     </div>
-                    <DiffViewer oldStr="" newStr={gitPatch} splitView={true} />
+                    {/* Extract the content for this specific file from the patch */}
+                    <DiffViewer 
+                      oldStr="" 
+                      newStr={file.hunks.map(hunk => hunk.content).join('\n')} 
+                      splitView={true} 
+                    />
                   </div>
                 ))}
               </div>
