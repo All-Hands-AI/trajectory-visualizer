@@ -136,36 +136,12 @@ const RunDetails: React.FC<RunDetailsProps> = ({ owner, repo, run, initialConten
       
       // If the entry has a path and metadata with file edit information, we can show it
       if (entry.path && entry.metadata) {
-        // Check if there's a patch in the metadata
-        if (entry.metadata.instance?.patch || entry.metadata.test_result?.git_patch) {
-          // The diff viewer will be shown in the ArtifactDetails component
-          // We just need to make sure the metadata is available in the artifactContent
-          if (!artifactContent) {
-            // If no artifact content exists, create a minimal one with just the patch data
-            setArtifactContent({
-              content: {
-                instance: entry.metadata.instance,
-                test_result: entry.metadata.test_result
-              }
-            });
-          } else if (artifactContent.content) {
-            // If artifact content exists, update it with the patch data
-            setArtifactContent({
-              ...artifactContent,
-              content: {
-                ...artifactContent.content,
-                instance: entry.metadata.instance,
-                test_result: entry.metadata.test_result
-              }
-            });
-          }
-        } else {
-          // No patch data available
-          alert(`File: ${entry.path}\n\nNo diff information available for this file edit.`);
-        }
+        // The diff viewer is now shown directly in the timeline entry via the EntryMetadataPanel
+        // We just need to ensure the entry is selected
+        setSelectedStepIndex(selectedStepIndex);
       }
     }
-  }, [getTimelineEntries, selectedStepIndex, artifactContent]);
+  }, [getTimelineEntries, selectedStepIndex]);
 
   const handleArtifactSelect = useCallback(async (artifact: Artifact) => {
     if (!artifact) return;

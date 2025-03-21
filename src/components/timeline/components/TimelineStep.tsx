@@ -4,6 +4,7 @@ import { getStepInfo } from '../utils/getStepInfo';
 import { colorClasses } from '../utils/styles';
 import MarkdownContent from './MarkdownContent';
 import CommandBlock from './CommandBlock';
+import EntryMetadataPanel from './EntryMetadataPanel';
 
 export const TimelineStep: React.FC<TimelineStepProps> = memo(({
   entry,
@@ -110,6 +111,9 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
                   )}
                 </div>
               )}
+              
+              {/* Entry Metadata Panel - only show when selected */}
+              {isSelected && <EntryMetadataPanel entry={entry} />}
             </div>
           </div>
         </div>
