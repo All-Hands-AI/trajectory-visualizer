@@ -57,11 +57,25 @@ The Trajectory Visualizer is a web application for visualizing OpenHands Resolve
 ### Collapsable Diff Panel
 - The `CollapsableDiffPanel` component is a collapsable panel that displays file changes
 - It is collapsed by default and can be expanded by clicking on it
-- It parses git diff format to extract file information
+- It uses the `parse-diff` library to properly parse git diff format
 - It displays the diffs in a more readable format with file names and changes
 - It provides more space for displaying diffs compared to the Entry Metadata panel
-- It uses helper functions `extractOldContent` and `extractNewContent` to properly parse git diff format
+- It uses helper functions `extractOldContent` and `extractNewContent` to extract old and new content from parsed diffs
 - It displays "Groundtruth Patch" instead of "Instance Patch" in the UI (while keeping the field name the same)
+- It properly handles the git diff format with the example format:
+  ```
+  diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py
+  --- a/astropy/modeling/separable.py
+  +++ b/astropy/modeling/separable.py
+  @@ -242,7 +242,7 @@ def _cstack(left, right):
+         cright = _coord_matrix(right, 'right', noutp)
+     else:
+         cright = np.zeros((noutp, right.shape[1]))
+  -        cright[-right.shape[0]:, -right.shape[1]:] = 1
+  +        cright[-right.shape[0]:, -right.shape[1]:] = right
+  
+     return np.hstack([cleft, right])
+  ```
 
 ### Data Flow
 1. Timeline entries are loaded from the artifact content
