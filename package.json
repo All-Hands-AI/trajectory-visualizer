@@ -8,6 +8,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "axios": "^1.6.8",
     "browser-process-hrtime": "^1.0.0",
     "clsx": "^2.1.1",
