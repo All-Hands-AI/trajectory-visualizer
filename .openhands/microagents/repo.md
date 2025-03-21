@@ -10,6 +10,7 @@ The Trajectory Visualizer is a web application for visualizing OpenHands Resolve
   - `/src/components/artifacts/`: Artifact details components
   - `/src/components/diff-viewer.tsx`: Diff viewer component for file changes
   - `/src/components/jsonl-viewer/`: JSONL viewer components
+    - `/src/components/jsonl-viewer/CollapsableDiffPanel.tsx`: Collapsable panel for displaying diffs
   - `/src/components/share/`: Shared components for trajectory visualization
 - `/src/services/`: API services
 - `/src/utils/`: Utility functions
@@ -35,6 +36,7 @@ The Trajectory Visualizer is a web application for visualizing OpenHands Resolve
 ### JSONL Viewer Components
 - `JsonlViewer.tsx`: Component for viewing JSONL files with trajectory data
 - `JsonlViewerSettings.tsx`: Settings for the JSONL viewer
+- `CollapsableDiffPanel.tsx`: Collapsable panel for displaying diffs above the trajectory
 
 ### Artifact Components
 - `ArtifactDetails.tsx`: Component for displaying artifact details, including diff views for patches
@@ -49,12 +51,19 @@ The Trajectory Visualizer is a web application for visualizing OpenHands Resolve
 - It uses `react-diff-viewer-continued` to display file diffs
 - The diff viewer is used in two places:
   1. In the `ArtifactDetails` component to display `.instance.patch` and `.test_result.git_patch` files
-  2. In the `JsonlViewer` component's Entry Metadata panel to display the same patch files
+  2. In the `CollapsableDiffPanel` component to display the same patch files in a collapsable panel above the trajectory
 - The `handleFileEditClick` function in `RunDetails.tsx` updates the artifact content with patch data when a file edit is clicked
+
+### Collapsable Diff Panel
+- The `CollapsableDiffPanel` component is a collapsable panel that displays file changes
+- It is collapsed by default and can be expanded by clicking on it
+- It parses git diff format to extract file information
+- It displays the diffs in a more readable format with file names and changes
+- It provides more space for displaying diffs compared to the Entry Metadata panel
 
 ### Data Flow
 1. Timeline entries are loaded from the artifact content
 2. When a file edit is clicked, the patch data is extracted from the entry metadata
 3. The patch data is added to the artifact content
 4. The `ArtifactDetails` component renders the patch data using the `DiffViewer` component
-5. The `JsonlViewer` component's Entry Metadata panel also renders the patch data using the `DiffViewer` component
+5. The `CollapsableDiffPanel` component renders the patch data using the `DiffViewer` component in a collapsable panel above the trajectory
