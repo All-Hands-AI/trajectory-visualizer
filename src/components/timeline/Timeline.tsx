@@ -36,7 +36,7 @@ export const Timeline: React.FC<TimelineProps> = ({
 
   return (
     <div className="h-full py-1 px-2">
-      <div ref={timelineContainerRef}>
+      <div ref={timelineContainerRef} className="h-full overflow-y-auto">
         {/* Empty state */}
         {entries.length === 0 && (
           <div className="p-4 text-center text-gray-500">
@@ -45,7 +45,7 @@ export const Timeline: React.FC<TimelineProps> = ({
         )}
 
         {/* Timeline entries */}
-        <div>
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
           {entries.map((entry, index) => {
             const realIndex = index;
             return (
@@ -53,7 +53,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                 key={realIndex}
                 ref={realIndex === selectedIndex ? selectedStepRef : null}
                 id={`timeline-step-${realIndex}`}
-                className="mb-2 relative"
+                className="relative"
               >
                 <TimelineStep
                   entry={entry}

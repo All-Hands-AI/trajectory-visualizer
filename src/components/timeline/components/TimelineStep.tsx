@@ -56,7 +56,7 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
                 <span className={`inline-flex items-center h-[18px] px-1.5 rounded-md text-[10px] font-medium ${colorClasses[stepColor]} shadow-sm ring-1 ring-black/5 dark:ring-white/5`}>
                   {actorType}
                 </span>
-                <h4 className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                <h4 className="text-xs font-medium text-gray-900 dark:text-white">
                   {stepTitle}
                 </h4>
                 <time className="text-[10px] tabular-nums text-gray-400 dark:text-gray-500 font-medium">
@@ -70,18 +70,23 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
               )}
             </div>
 
-            {/* Content sections */}
+            {/* Content sections - only show previews in timeline */}
             <div className="space-y-1 mt-1.5">
+              {/* Thought content */}
               {entry.thought && (
-                <div className="text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 rounded px-2 py-1">
+                <div className="text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 rounded px-2 py-1 overflow-hidden">
                   <MarkdownContent content={entry.thought} />
                 </div>
               )}
+              
+              {/* Regular content */}
               {entry.content && (
-                <div className="text-xs text-gray-600 dark:text-gray-300">
+                <div className="text-xs text-gray-600 dark:text-gray-300 overflow-hidden">
                   <MarkdownContent content={entry.content} />
                 </div>
               )}
+
+              {/* Screenshot */}
               {entry.metadata?.screenshot && (
                  <div className="mt-2">
                    <img
@@ -91,21 +96,40 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
                    />
                  </div>
                )}
+              
+              {/* Command content */}
               {entry.command && (
-                <CommandBlock command={entry.command} onCopy={onCommandClick} />
+                <div className="overflow-hidden">
+                  <CommandBlock command={entry.command} onCopy={onCommandClick} />
+                </div>
               )}
+              
+              {/* Screenshot */}
+              {entry.metadata?.screenshot && (
+                <div className="mt-2">
+                  <img
+                    src={entry.metadata.screenshot}
+                    alt="Screenshot"
+                    className="max-w-full rounded-md shadow-sm ring-1 ring-black/5 dark:ring-white/5"
+                  />
+                </div>
+              )}
+              
+              {/* File path for edits */}
               {entry.path && (
                 <div className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400">
-                  <code className="font-mono bg-gray-50/50 dark:bg-gray-800/50 px-1 rounded">
+                  <code className="font-mono bg-gray-50/50 dark:bg-gray-800/50 px-1 rounded truncate max-w-[180px]">
                     {entry.path}
                   </code>
-                  <button
-                    type="button"
-                    onClick={onFileEditClick}
-                    className="ml-auto text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    View Changes
-                  </button>
+                  {onFileEditClick && (
+                    <button
+                      type="button"
+                      onClick={() => onFileEditClick()}
+                      className="ml-auto text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 whitespace-nowrap"
+                    >
+                      View Changes
+                    </button>
+                  )}
                 </div>
               )}
             </div>

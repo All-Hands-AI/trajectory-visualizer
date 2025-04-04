@@ -1,11 +1,14 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { UploadContent } from '../../types/upload';
 
 interface UploadTrajectoryProps {
-  onUpload: (content: any) => void;
+  onUpload: (content: UploadContent) => void;
 }
 
 export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) => {
+
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
 
@@ -14,14 +17,16 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
 
     reader.onload = () => {
       try {
+        // For JSON files, we parse the content and pass it as a trajectory
         const content = JSON.parse(reader.result as string);
         onUpload({
           content: {
-            trajectory: content
+            trajectoryData: content,
+            fileType: 'trajectory'
           }
         });
       } catch (error) {
-        console.error('Failed to parse JSON:', error);
+        console.error('Failed to process file:', error);
         alert('Failed to parse the trajectory file. Please make sure it is a valid JSON file.');
       }
     };

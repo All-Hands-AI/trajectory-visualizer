@@ -10,15 +10,19 @@
   "dependencies": {
     "axios": "^1.6.8",
     "browser-process-hrtime": "^1.0.0",
+    "clsx": "^2.1.1",
+    "diff": "^7.0.0",
     "jszip": "^3.10.1",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
+    "react-diff-viewer-continued": "^3.4.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.3.8",
     "react-icons": "^5.5.0",
-    "react-markdown": "^9.0.1",
+    "react-markdown": "^9.1.0",
     "react-router-dom": "^6.22.3",
-    "remark-gfm": "^4.0.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "remark-gfm": "^4.0.1",
     "web-vitals": "^4.2.4"
   },
   "scripts": {
@@ -26,7 +30,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "pre-commit": "./pre-commit-check.sh"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
@@ -36,6 +41,7 @@
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.67",
     "@types/react-dom": "^18.2.22",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "@types/testing-library__react": "^10.0.1",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",

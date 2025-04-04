@@ -9,13 +9,13 @@ export interface TimelineEntry {
   actorType?: 'User' | 'Assistant' | 'System';
   metadata?: {
     cost?: number;
-    screenshot?: string;
+    screenshot?: string; // Base64 encoded image data or image URL
     [key: string]: any;
   };
   screenshot?: string;
 }
 
-export type StepColor = 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple' | 'indigo';
+export type StepColor = 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple' | 'indigo' | 'amber' | 'emerald' | 'teal' | 'cyan' | 'pink' | 'rose';
 
 export interface StepInfo {
   stepTitle: string;

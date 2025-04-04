@@ -51,7 +51,8 @@ describe('UploadTrajectory', () => {
     await waitFor(() => {
       expect(mockOnUpload).toHaveBeenCalledWith({
         content: {
-          trajectory: [
+          fileType: 'trajectory',
+          trajectoryData: [
             {
               action: 'execute_bash',
               args: { command: 'ls' }
@@ -100,7 +101,8 @@ describe('UploadTrajectory', () => {
     await waitFor(() => {
       expect(mockOnUpload).toHaveBeenCalledWith({
         content: {
-          trajectory: newFormatData
+          fileType: 'trajectory',
+          trajectoryData: newFormatData
         }
       });
     });
