@@ -12,6 +12,7 @@ export interface TimelineEntry {
     screenshot?: string; // Base64 encoded image data or image URL
     [key: string]: any;
   };
+  screenshot?: string;
 }
 
 export type StepColor = 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple' | 'indigo' | 'amber' | 'emerald' | 'teal' | 'cyan' | 'pink' | 'rose';
