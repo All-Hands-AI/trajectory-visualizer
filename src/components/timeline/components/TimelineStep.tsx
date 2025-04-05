@@ -85,6 +85,28 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
                   <MarkdownContent content={entry.content} />
                 </div>
               )}
+
+              {/* Screenshot */}
+              {entry.metadata?.screenshot && (
+                 <div className="mt-2">
+                   <img
+                     src={entry.metadata.screenshot}
+                     alt="Screenshot"
+                     className="max-w-full rounded-md shadow-sm ring-1 ring-black/5 dark:ring-white/5"
+                   />
+                 </div>
+               )}
+
+              {/* Set of marks, only show when there's no screenshot */}
+              {entry.metadata?.set_of_marks && !entry.metadata?.screenshot && (
+                <div className="mt-2">
+                  <img
+                    src={entry.metadata.set_of_marks}
+                    alt="Set of marks"
+                    className="max-w-full rounded-md shadow-sm ring-1 ring-black/5 dark:ring-white/5"
+                  />
+                </div>
+              )}
               
               {/* Command content */}
               {entry.command && (

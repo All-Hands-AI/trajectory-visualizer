@@ -160,6 +160,14 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
         };
       }
 
+      // Add set of marks if available in extras.metadata
+      if (event.extras?.metadata?.set_of_marks) {
+        entry.metadata = {
+          ...entry.metadata,
+          set_of_marks: event.extras.metadata.set_of_marks
+        };
+      }
+
       entries.push(entry as TimelineEntry);
     } else if (event.observation || event.message) {
       // This is an observation event or a message-only event
