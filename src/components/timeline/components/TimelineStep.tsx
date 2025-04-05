@@ -121,6 +121,8 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
                   )}
                 </div>
               )}
+              
+              {/* Entry metadata is now shown in the right panel */}
             </div>
           </div>
         </div>
