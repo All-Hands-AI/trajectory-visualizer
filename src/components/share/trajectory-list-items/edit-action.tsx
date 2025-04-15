@@ -12,6 +12,7 @@ export const EditActionComponent: React.FC<EditActionProps> = ({ item }) => {
     <TrajectoryCard 
       className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800"
       originalJson={item}
+      timestamp={item.timestamp}
     >
       <TrajectoryCard.Header className="bg-orange-100 dark:bg-orange-800/50 text-orange-800 dark:text-orange-100">
         <div className="flex justify-between items-center w-full">
