@@ -3,6 +3,7 @@ import { JsonlEntry, parseJsonlFile } from '../../utils/jsonl-parser';
 import JsonlViewerSettings, { JsonlViewerSettings as JsonlViewerSettingsType } from './JsonlViewerSettings';
 import { getNestedValue, formatValueForDisplay } from '../../utils/object-utils';
 import { TrajectoryItem } from '../../types/share';
+import { TrajectoryHistoryEntry } from '../../types/trajectory';
 import JsonVisualizer from '../json-visualizer/JsonVisualizer';
 import { DEFAULT_JSONL_VIEWER_SETTINGS } from '../../config/jsonl-viewer-config';
 import {
@@ -50,7 +51,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   const [entries, setEntries] = useState<JsonlEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
-  const [trajectoryItems, setTrajectoryItems] = useState<TrajectoryItem[]>([]);
+  const [trajectoryItems, setTrajectoryItems] = useState<TrajectoryHistoryEntry[]>([]);
   const [settings, setSettings] = useState<JsonlViewerSettingsType>(DEFAULT_JSONL_VIEWER_SETTINGS);
   const [originalEntries, setOriginalEntries] = useState<JsonlEntry[]>([]);
 
@@ -67,7 +68,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
       if (parsedEntries.length > 0) {
         const currentEntry = parsedEntries[0];
         if (currentEntry.history && Array.isArray(currentEntry.history)) {
-          setTrajectoryItems(currentEntry.history as TrajectoryItem[]);
+          setTrajectoryItems(currentEntry.history);
         }
       }
     } catch (err) {
@@ -142,7 +143,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     if (entries.length > 0 && index < entries.length) {
       const selectedEntry = entries[index];
       if (selectedEntry.history && Array.isArray(selectedEntry.history)) {
-        setTrajectoryItems(selectedEntry.history as TrajectoryItem[]);
+        setTrajectoryItems(selectedEntry.history);
       } else {
         setTrajectoryItems([]);
       }
@@ -157,7 +158,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   };
 
   // Helper function to calculate duration in milliseconds
-  const calculateDurationMs = (history: TrajectoryItem[]): number => {
+  const calculateDurationMs = (history: TrajectoryHistoryEntry[]): number => {
     if (!history || history.length === 0 || !history[0].timestamp) return 0;
     
     const startTime = new Date(history[0].timestamp);
@@ -177,7 +178,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   };
 
   // Helper function to calculate duration string
-  const calculateDuration = (history: TrajectoryItem[]): string | null => {
+  const calculateDuration = (history: TrajectoryHistoryEntry[]): string | null => {
     const durationMs = calculateDurationMs(history);
     return durationMs > 0 ? formatDuration(durationMs) : null;
   };
@@ -244,14 +245,14 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   }, [entries, currentEntryIndex]);
 
   // Function to filter out unwanted trajectory items
-  const shouldDisplayItem = (item: TrajectoryItem): boolean => {
+  const shouldDisplayItem = (item: TrajectoryHistoryEntry): boolean => {
     // Filter out change_agent_state actions
-    if ("action" in item && item.action === "change_agent_state" as const) {
+    if (item.action === "change_agent_state") {
       return false;
     }
 
     // Filter out null observations
-    if ("observation" in item && typeof item.observation === "string" && item.observation === "null") {
+    if (item.observation === "null") {
       return false;
     }
 
