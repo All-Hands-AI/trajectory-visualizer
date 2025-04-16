@@ -186,8 +186,6 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   const getEntrySummary = (entry: JsonlEntry): React.ReactNode => {
     // If we have custom display fields, use those
     if (settings.displayFields.length > 0) {
-      const duration = entry.history && Array.isArray(entry.history) ? calculateDuration(entry.history) : null;
-      
       return (
         <div className="space-y-1">
           {settings.displayFields.map((field, idx) => {
@@ -208,12 +206,6 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
               </div>
             );
           })}
-          {duration && (
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500 dark:text-gray-400">duration:</span>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{duration}</span>
-            </div>
-          )}
         </div>
       );
     }
