@@ -276,8 +276,21 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
           <div className="h-full flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
             {/* Timeline Header - fixed */}
             <div className="flex-none h-10 px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                Trajectory ({filteredTrajectoryItems.length} steps)
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                <span>Trajectory ({filteredTrajectoryItems.length} steps)</span>
+                {filteredTrajectoryItems.length > 0 && filteredTrajectoryItems[0].timestamp && (() => {
+                  const startTime = new Date(filteredTrajectoryItems[0].timestamp);
+                  const endTime = new Date(filteredTrajectoryItems[filteredTrajectoryItems.length - 1].timestamp);
+                  const durationMs = endTime.getTime() - startTime.getTime();
+                  const durationSec = Math.round(durationMs / 1000);
+                  const durationMin = Math.floor(durationSec / 60);
+                  const remainingSec = durationSec % 60;
+                  const durationStr = durationMin > 0 ? 
+                    `${durationMin}m ${remainingSec}s` : 
+                    `${remainingSec}s`;
+                  
+                  return <span className="text-gray-500 dark:text-gray-400 ml-2">- {durationStr}</span>;
+                })()}
               </h3>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {entries[currentEntryIndex] && (
