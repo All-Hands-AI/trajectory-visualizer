@@ -149,10 +149,28 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     return `Entry ${index + 1}`;
   };
 
+  // Helper function to calculate duration
+  const calculateDuration = (history: TrajectoryItem[]): string | null => {
+    if (!history || history.length === 0 || !history[0].timestamp) return null;
+    
+    const startTime = new Date(history[0].timestamp);
+    const endTime = new Date(history[history.length - 1].timestamp);
+    const durationMs = endTime.getTime() - startTime.getTime();
+    const durationSec = Math.round(durationMs / 1000);
+    const durationMin = Math.floor(durationSec / 60);
+    const remainingSec = durationSec % 60;
+    
+    return durationMin > 0 ? 
+      `${durationMin}m ${remainingSec}s` : 
+      `${remainingSec}s`;
+  };
+
   // Get a summary of the entry for the sidebar
   const getEntrySummary = (entry: JsonlEntry): React.ReactNode => {
     // If we have custom display fields, use those
     if (settings.displayFields.length > 0) {
+      const duration = entry.history && Array.isArray(entry.history) ? calculateDuration(entry.history) : null;
+      
       return (
         <div className="space-y-1">
           {settings.displayFields.map((field, idx) => {
@@ -173,6 +191,12 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
               </div>
             );
           })}
+          {duration && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 dark:text-gray-400">duration:</span>
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{duration}</span>
+            </div>
+          )}
         </div>
       );
     }
@@ -278,18 +302,9 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
             <div className="flex-none h-10 px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
                 <span>Trajectory ({filteredTrajectoryItems.length} steps)</span>
-                {filteredTrajectoryItems.length > 0 && filteredTrajectoryItems[0].timestamp && (() => {
-                  const startTime = new Date(filteredTrajectoryItems[0].timestamp);
-                  const endTime = new Date(filteredTrajectoryItems[filteredTrajectoryItems.length - 1].timestamp);
-                  const durationMs = endTime.getTime() - startTime.getTime();
-                  const durationSec = Math.round(durationMs / 1000);
-                  const durationMin = Math.floor(durationSec / 60);
-                  const remainingSec = durationSec % 60;
-                  const durationStr = durationMin > 0 ? 
-                    `${durationMin}m ${remainingSec}s` : 
-                    `${remainingSec}s`;
-                  
-                  return <span className="text-gray-500 dark:text-gray-400 ml-2">- {durationStr}</span>;
+                {(() => {
+                  const duration = calculateDuration(filteredTrajectoryItems);
+                  return duration && <span className="text-gray-500 dark:text-gray-400 ml-2">- {duration}</span>;
                 })()}
               </h3>
               <div className="text-xs text-gray-500 dark:text-gray-400">
