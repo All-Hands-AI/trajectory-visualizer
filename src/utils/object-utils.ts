@@ -14,6 +14,15 @@ export function getNestedValue(obj: any, path: string, defaultValue: any = undef
   if (!obj || !path) return defaultValue;
   
   // Handle special functions
+  if (path === 'duration') {
+    if (!obj.history || !Array.isArray(obj.history) || obj.history.length === 0 || !obj.history[0].timestamp) {
+      return defaultValue;
+    }
+    const startTime = new Date(obj.history[0].timestamp);
+    const endTime = new Date(obj.history[obj.history.length - 1].timestamp);
+    return endTime.getTime() - startTime.getTime();
+  }
+
   if (path.startsWith('len(') && path.endsWith(')')) {
     const innerPath = path.substring(4, path.length - 1);
     const value = getNestedValue(obj, innerPath, null);
@@ -59,7 +68,7 @@ export function getNestedValue(obj: any, path: string, defaultValue: any = undef
  * @param value The value to format
  * @returns A string representation of the value
  */
-export function formatValueForDisplay(value: any): string {
+export function formatValueForDisplay(value: any, path?: string): string {
   if (value === null || value === undefined) {
     return 'N/A';
   }
@@ -69,6 +78,13 @@ export function formatValueForDisplay(value: any): string {
   }
   
   if (typeof value === 'number') {
+    // Special handling for duration values (they come in milliseconds)
+    if (path === 'duration') {
+      const durationSec = Math.round(value / 1000);
+      const durationMin = Math.floor(durationSec / 60);
+      const remainingSec = durationSec % 60;
+      return durationMin > 0 ? `${durationMin}m ${remainingSec}s` : `${remainingSec}s`;
+    }
     // Format numbers with up to 4 decimal places
     return Number.isInteger(value) ? value.toString() : value.toFixed(4);
   }

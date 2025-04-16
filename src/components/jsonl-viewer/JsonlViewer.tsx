@@ -86,6 +86,13 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     
     // Create a copy of the entries to sort
     const sortedEntries = [...entriesToSort].sort((a, b) => {
+      // Special handling for duration sorting
+      if (currentSettings.sortField === 'duration') {
+        const durationA = a.history && Array.isArray(a.history) ? calculateDurationMs(a.history) : 0;
+        const durationB = b.history && Array.isArray(b.history) ? calculateDurationMs(b.history) : 0;
+        return currentSettings.sortDirection === 'asc' ? durationA - durationB : durationB - durationA;
+      }
+
       // Get values using the sort field
       const valueA = getNestedValue(a, currentSettings.sortField, null);
       const valueB = getNestedValue(b, currentSettings.sortField, null);
@@ -149,13 +156,17 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     return `Entry ${index + 1}`;
   };
 
-  // Helper function to calculate duration
-  const calculateDuration = (history: TrajectoryItem[]): string | null => {
-    if (!history || history.length === 0 || !history[0].timestamp) return null;
+  // Helper function to calculate duration in milliseconds
+  const calculateDurationMs = (history: TrajectoryItem[]): number => {
+    if (!history || history.length === 0 || !history[0].timestamp) return 0;
     
     const startTime = new Date(history[0].timestamp);
     const endTime = new Date(history[history.length - 1].timestamp);
-    const durationMs = endTime.getTime() - startTime.getTime();
+    return endTime.getTime() - startTime.getTime();
+  };
+
+  // Helper function to format duration
+  const formatDuration = (durationMs: number): string => {
     const durationSec = Math.round(durationMs / 1000);
     const durationMin = Math.floor(durationSec / 60);
     const remainingSec = durationSec % 60;
@@ -163,6 +174,12 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     return durationMin > 0 ? 
       `${durationMin}m ${remainingSec}s` : 
       `${remainingSec}s`;
+  };
+
+  // Helper function to calculate duration string
+  const calculateDuration = (history: TrajectoryItem[]): string | null => {
+    const durationMs = calculateDurationMs(history);
+    return durationMs > 0 ? formatDuration(durationMs) : null;
   };
 
   // Get a summary of the entry for the sidebar
@@ -175,7 +192,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
         <div className="space-y-1">
           {settings.displayFields.map((field, idx) => {
             const value = getNestedValue(entry, field, null);
-            const displayValue = formatValueForDisplay(value);
+            const displayValue = formatValueForDisplay(value, field);
             
             // Format the field name for display
             let displayField = field;

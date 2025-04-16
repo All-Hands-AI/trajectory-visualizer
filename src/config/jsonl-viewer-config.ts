@@ -10,14 +10,16 @@ export const COMMON_SORT_FIELDS: SortField[] = [
   { value: 'instance_id', label: 'Instance ID' },
   { value: 'metrics.accumulated_cost', label: 'Cost (metrics.accumulated_cost)' },
   { value: 'report.resolved', label: 'Resolved Status (report.resolved)' },
-  { value: 'len(history)', label: 'History Length (len(history))' }
+  { value: 'len(history)', label: 'History Length (len(history))' },
+  { value: 'duration', label: 'Duration' }
 ];
 
 // Common display fields
 export const COMMON_DISPLAY_FIELDS: string[] = [
   'metrics.accumulated_cost',
   'report.resolved',
-  'len(history)'
+  'len(history)',
+  'duration'
 ];
 
 // Default settings
