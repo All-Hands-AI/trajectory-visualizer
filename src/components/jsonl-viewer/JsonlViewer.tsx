@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { JsonlEntry, parseJsonlFile } from '../../utils/jsonl-parser';
 import JsonlViewerSettings, { JsonlViewerSettings as JsonlViewerSettingsType } from './JsonlViewerSettings';
 import { getNestedValue, formatValueForDisplay } from '../../utils/object-utils';
-import { TrajectoryItem } from '../../types/share';
 import { TrajectoryHistoryEntry } from '../../types/trajectory';
 import JsonVisualizer from '../json-visualizer/JsonVisualizer';
 import { DEFAULT_JSONL_VIEWER_SETTINGS } from '../../config/jsonl-viewer-config';
@@ -332,35 +331,35 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
                 <div className="flex flex-col items-center gap-4">
                   {filteredTrajectoryItems.map((item, index) => {
                     if (isAgentStateChange(item)) {
-                      return <AgentStateChangeComponent key={index} state={item} />;
+                      return <AgentStateChangeComponent key={index} state={item as any} />;
                     } else if (isUserMessage(item)) {
-                      return <UserMessageComponent key={index} message={item} />;
+                      return <UserMessageComponent key={index} message={item as any} />;
                     } else if (isAssistantMessage(item)) {
-                      return <AssistantMessageComponent key={index} message={item} />;
+                      return <AssistantMessageComponent key={index} message={item as any} />;
                     } else if (isCommandAction(item)) {
-                      return <CommandActionComponent key={index} command={item} />;
+                      return <CommandActionComponent key={index} command={item as any} />;
                     } else if (isCommandObservation(item)) {
-                      return <CommandObservationComponent key={index} observation={item} />;
+                      return <CommandObservationComponent key={index} observation={item as any} />;
                     } else if (isIPythonAction(item)) {
-                      return <IPythonActionComponent key={index} action={item} />;
+                      return <IPythonActionComponent key={index} action={item as any} />;
                     } else if (isIPythonObservation(item)) {
-                      return <IPythonObservationComponent key={index} observation={item} />;
+                      return <IPythonObservationComponent key={index} observation={item as any} />;
                     } else if (isFinishAction(item)) {
-                      return <FinishActionComponent key={index} action={item} />;
+                      return <FinishActionComponent key={index} action={item as any} />;
                     } else if (isErrorObservation(item)) {
-                      return <ErrorObservationComponent key={index} observation={item} />;
+                      return <ErrorObservationComponent key={index} observation={item as any} />;
                     } else if (isReadAction(item)) {
-                      return <ReadActionComponent key={index} item={item} />;
+                      return <ReadActionComponent key={index} item={item as any} />;
                     } else if (isReadObservation(item)) {
-                      return <ReadObservationComponent key={index} observation={item} />;
+                      return <ReadObservationComponent key={index} observation={item as any} />;
                     } else if (isEditAction(item)) {
-                      return <EditActionComponent key={index} item={item} />;
+                      return <EditActionComponent key={index} item={item as any} />;
                     } else if (isEditObservation(item)) {
-                      return <EditObservationComponent key={index} observation={item} />;
+                      return <EditObservationComponent key={index} observation={item as any} />;
                     } else if (isThinkAction(item)) {
-                      return <ThinkActionComponent key={index} action={item} />;
+                      return <ThinkActionComponent key={index} action={item as any} />;
                     } else if (isThinkObservation(item)) {
-                      return <ThinkObservationComponent key={index} observation={item} />;
+                      return <ThinkObservationComponent key={index} observation={item as any} />;
                     } else {
                       return (
                         <TrajectoryCard key={index}>
