@@ -13,6 +13,7 @@ export const ReadActionComponent: React.FC<ReadActionProps> = ({ item }) => {
     <TrajectoryCard 
       className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800"
       originalJson={item}
+      timestamp={item.timestamp}
     >
       <TrajectoryCard.Header className="bg-indigo-100 dark:bg-indigo-800/50 text-indigo-800 dark:text-indigo-100">File Read Action</TrajectoryCard.Header>
       <TrajectoryCard.Body>

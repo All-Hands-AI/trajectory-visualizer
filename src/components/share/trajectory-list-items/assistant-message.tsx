@@ -14,6 +14,7 @@ export const AssistantMessageComponent: React.FC<AssistantMessageProps> = ({ mes
     <TrajectoryCard 
       className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800"
       originalJson={message}
+      timestamp={message.timestamp}
     >
       <TrajectoryCard.Header className="bg-purple-100 dark:bg-purple-800/50 text-purple-800 dark:text-purple-100">Assistant Message</TrajectoryCard.Header>
       <TrajectoryCard.Body>

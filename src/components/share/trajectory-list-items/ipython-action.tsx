@@ -13,6 +13,7 @@ export const IPythonActionComponent: React.FC<IPythonActionProps> = ({ action })
     <TrajectoryCard 
       className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800"
       originalJson={action}
+      timestamp={action.timestamp}
     >
       <TrajectoryCard.Header className="bg-yellow-100 dark:bg-yellow-800/50 text-yellow-800 dark:text-yellow-100">IPython Action</TrajectoryCard.Header>
       <TrajectoryCard.Body>

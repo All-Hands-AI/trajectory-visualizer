@@ -7,6 +7,7 @@ interface TrajectoryTempateProps {
   className?: React.HTMLAttributes<HTMLDivElement>["className"];
   originalJson?: any;
   defaultCollapsed?: boolean;
+  timestamp?: string;
 }
 
 interface TrajectoryCardType extends React.FC<TrajectoryTempateProps> {
@@ -14,7 +15,7 @@ interface TrajectoryCardType extends React.FC<TrajectoryTempateProps> {
   Body: React.FC<TrajectoryCardBodyProps>;
 }
 
-export const TrajectoryCard: TrajectoryCardType = ({ children, className, originalJson, defaultCollapsed = false }) => {
+export const TrajectoryCard: TrajectoryCardType = ({ children, className, originalJson, defaultCollapsed = false, timestamp }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   
@@ -45,7 +46,9 @@ export const TrajectoryCard: TrajectoryCardType = ({ children, className, origin
           className="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
-          <div className="flex-grow">{header}</div>
+          <div className="flex-grow">
+            {React.isValidElement(header) && React.cloneElement(header, { timestamp })}
+          </div>
           <button
             className="px-2 py-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             aria-label={isCollapsed ? "Expand" : "Collapse"}
@@ -99,17 +102,23 @@ export const TrajectoryCard: TrajectoryCardType = ({ children, className, origin
 interface TrajectoryCardHeaderProps {
   children: React.ReactNode;
   className?: React.HTMLAttributes<HTMLDivElement>["className"];
+  timestamp?: string;
 }
 
-const TrajectoryCardHeader: React.FC<TrajectoryCardHeaderProps> = ({ children, className }) => {
+const TrajectoryCardHeader: React.FC<TrajectoryCardHeaderProps> = ({ children, className, timestamp }) => {
   return (
     <div
       className={clsx(
-        "rounded-t-md py-1 px-2 font-medium text-[10px]",
+        "rounded-t-md py-1 px-2 font-medium text-[10px] flex justify-between items-center",
         className,
       )}
     >
-      {children}
+      <div>{children}</div>
+      {timestamp && (
+        <div className="text-[9px] opacity-80">
+          {new Date(timestamp).toLocaleString()}
+        </div>
+      )}
     </div>
   );
 }

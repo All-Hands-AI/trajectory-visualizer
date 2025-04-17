@@ -3,6 +3,7 @@ import { JsonlEntry, parseJsonlFile } from '../../utils/jsonl-parser';
 import JsonlViewerSettings, { JsonlViewerSettings as JsonlViewerSettingsType } from './JsonlViewerSettings';
 import { getNestedValue, formatValueForDisplay } from '../../utils/object-utils';
 import { TrajectoryItem } from '../../types/share';
+import { TrajectoryHistoryEntry } from '../../types/trajectory';
 import JsonVisualizer from '../json-visualizer/JsonVisualizer';
 import { DEFAULT_JSONL_VIEWER_SETTINGS } from '../../config/jsonl-viewer-config';
 import {
@@ -50,7 +51,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   const [entries, setEntries] = useState<JsonlEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
-  const [trajectoryItems, setTrajectoryItems] = useState<TrajectoryItem[]>([]);
+  const [trajectoryItems, setTrajectoryItems] = useState<TrajectoryHistoryEntry[]>([]);
   const [settings, setSettings] = useState<JsonlViewerSettingsType>(DEFAULT_JSONL_VIEWER_SETTINGS);
   const [originalEntries, setOriginalEntries] = useState<JsonlEntry[]>([]);
 
@@ -67,7 +68,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
       if (parsedEntries.length > 0) {
         const currentEntry = parsedEntries[0];
         if (currentEntry.history && Array.isArray(currentEntry.history)) {
-          setTrajectoryItems(currentEntry.history as TrajectoryItem[]);
+          setTrajectoryItems(currentEntry.history);
         }
       }
     } catch (err) {
@@ -86,6 +87,13 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     
     // Create a copy of the entries to sort
     const sortedEntries = [...entriesToSort].sort((a, b) => {
+      // Special handling for duration sorting
+      if (currentSettings.sortField === 'duration') {
+        const durationA = a.history && Array.isArray(a.history) ? calculateDurationMs(a.history) : 0;
+        const durationB = b.history && Array.isArray(b.history) ? calculateDurationMs(b.history) : 0;
+        return currentSettings.sortDirection === 'asc' ? durationA - durationB : durationB - durationA;
+      }
+
       // Get values using the sort field
       const valueA = getNestedValue(a, currentSettings.sortField, null);
       const valueB = getNestedValue(b, currentSettings.sortField, null);
@@ -135,7 +143,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     if (entries.length > 0 && index < entries.length) {
       const selectedEntry = entries[index];
       if (selectedEntry.history && Array.isArray(selectedEntry.history)) {
-        setTrajectoryItems(selectedEntry.history as TrajectoryItem[]);
+        setTrajectoryItems(selectedEntry.history);
       } else {
         setTrajectoryItems([]);
       }
@@ -149,6 +157,32 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
     return `Entry ${index + 1}`;
   };
 
+  // Helper function to calculate duration in milliseconds
+  const calculateDurationMs = (history: TrajectoryHistoryEntry[]): number => {
+    if (!history || history.length === 0 || !history[0].timestamp) return 0;
+    
+    const startTime = new Date(history[0].timestamp || new Date());
+    const endTime = new Date(history[history.length - 1].timestamp || new Date());
+    return endTime.getTime() - startTime.getTime();
+  };
+
+  // Helper function to format duration
+  const formatDuration = (durationMs: number): string => {
+    const durationSec = Math.round(durationMs / 1000);
+    const durationMin = Math.floor(durationSec / 60);
+    const remainingSec = durationSec % 60;
+    
+    return durationMin > 0 ? 
+      `${durationMin}m ${remainingSec}s` : 
+      `${remainingSec}s`;
+  };
+
+  // Helper function to calculate duration string
+  const calculateDuration = (history: TrajectoryHistoryEntry[]): string | null => {
+    const durationMs = calculateDurationMs(history);
+    return durationMs > 0 ? formatDuration(durationMs) : null;
+  };
+
   // Get a summary of the entry for the sidebar
   const getEntrySummary = (entry: JsonlEntry): React.ReactNode => {
     // If we have custom display fields, use those
@@ -157,7 +191,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
         <div className="space-y-1">
           {settings.displayFields.map((field, idx) => {
             const value = getNestedValue(entry, field, null);
-            const displayValue = formatValueForDisplay(value);
+            const displayValue = formatValueForDisplay(value, field);
             
             // Format the field name for display
             let displayField = field;
@@ -211,14 +245,14 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   }, [entries, currentEntryIndex]);
 
   // Function to filter out unwanted trajectory items
-  const shouldDisplayItem = (item: TrajectoryItem): boolean => {
+  const shouldDisplayItem = (item: TrajectoryHistoryEntry): boolean => {
     // Filter out change_agent_state actions
-    if ("action" in item && item.action === "change_agent_state" as const) {
+    if (item.action === "change_agent_state") {
       return false;
     }
 
     // Filter out null observations
-    if ("observation" in item && typeof item.observation === "string" && item.observation === "null") {
+    if (item.observation === "null") {
       return false;
     }
 
@@ -276,8 +310,12 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
           <div className="h-full flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
             {/* Timeline Header - fixed */}
             <div className="flex-none h-10 px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                Trajectory ({filteredTrajectoryItems.length} steps)
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                <span>Trajectory ({filteredTrajectoryItems.length} steps)</span>
+                {(() => {
+                  const duration = calculateDuration(filteredTrajectoryItems);
+                  return duration && <span className="text-gray-500 dark:text-gray-400 ml-2">- {duration}</span>;
+                })()}
               </h3>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {entries[currentEntryIndex] && (
@@ -293,36 +331,37 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
               {filteredTrajectoryItems.length > 0 ? (
                 <div className="flex flex-col items-center gap-4">
                   {filteredTrajectoryItems.map((item, index) => {
-                    if (isAgentStateChange(item)) {
-                      return <AgentStateChangeComponent key={index} state={item} />;
-                    } else if (isUserMessage(item)) {
-                      return <UserMessageComponent key={index} message={item} />;
-                    } else if (isAssistantMessage(item)) {
-                      return <AssistantMessageComponent key={index} message={item} />;
-                    } else if (isCommandAction(item)) {
-                      return <CommandActionComponent key={index} command={item} />;
-                    } else if (isCommandObservation(item)) {
-                      return <CommandObservationComponent key={index} observation={item} />;
-                    } else if (isIPythonAction(item)) {
-                      return <IPythonActionComponent key={index} action={item} />;
-                    } else if (isIPythonObservation(item)) {
-                      return <IPythonObservationComponent key={index} observation={item} />;
-                    } else if (isFinishAction(item)) {
-                      return <FinishActionComponent key={index} action={item} />;
-                    } else if (isErrorObservation(item)) {
-                      return <ErrorObservationComponent key={index} observation={item} />;
-                    } else if (isReadAction(item)) {
-                      return <ReadActionComponent key={index} item={item} />;
-                    } else if (isReadObservation(item)) {
-                      return <ReadObservationComponent key={index} observation={item} />;
-                    } else if (isEditAction(item)) {
-                      return <EditActionComponent key={index} item={item} />;
-                    } else if (isEditObservation(item)) {
-                      return <EditObservationComponent key={index} observation={item} />;
-                    } else if (isThinkAction(item)) {
-                      return <ThinkActionComponent key={index} action={item} />;
-                    } else if (isThinkObservation(item)) {
-                      return <ThinkObservationComponent key={index} observation={item} />;
+                    const trajectoryItem = item as unknown as TrajectoryItem;
+                    if (isAgentStateChange(trajectoryItem)) {
+                      return <AgentStateChangeComponent key={index} state={trajectoryItem as any} />;
+                    } else if (isUserMessage(trajectoryItem)) {
+                      return <UserMessageComponent key={index} message={trajectoryItem as any} />;
+                    } else if (isAssistantMessage(trajectoryItem)) {
+                      return <AssistantMessageComponent key={index} message={trajectoryItem as any} />;
+                    } else if (isCommandAction(trajectoryItem)) {
+                      return <CommandActionComponent key={index} command={trajectoryItem as any} />;
+                    } else if (isCommandObservation(trajectoryItem)) {
+                      return <CommandObservationComponent key={index} observation={trajectoryItem as any} />;
+                    } else if (isIPythonAction(trajectoryItem)) {
+                      return <IPythonActionComponent key={index} action={trajectoryItem as any} />;
+                    } else if (isIPythonObservation(trajectoryItem)) {
+                      return <IPythonObservationComponent key={index} observation={trajectoryItem as any} />;
+                    } else if (isFinishAction(trajectoryItem)) {
+                      return <FinishActionComponent key={index} action={trajectoryItem as any} />;
+                    } else if (isErrorObservation(trajectoryItem)) {
+                      return <ErrorObservationComponent key={index} observation={trajectoryItem as any} />;
+                    } else if (isReadAction(trajectoryItem)) {
+                      return <ReadActionComponent key={index} item={trajectoryItem as any} />;
+                    } else if (isReadObservation(trajectoryItem)) {
+                      return <ReadObservationComponent key={index} observation={trajectoryItem as any} />;
+                    } else if (isEditAction(trajectoryItem)) {
+                      return <EditActionComponent key={index} item={trajectoryItem as any} />;
+                    } else if (isEditObservation(trajectoryItem)) {
+                      return <EditObservationComponent key={index} observation={trajectoryItem as any} />;
+                    } else if (isThinkAction(trajectoryItem)) {
+                      return <ThinkActionComponent key={index} action={trajectoryItem as any} />;
+                    } else if (isThinkObservation(trajectoryItem)) {
+                      return <ThinkObservationComponent key={index} observation={trajectoryItem as any} />;
                     } else {
                       return (
                         <TrajectoryCard key={index}>
