@@ -161,8 +161,8 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
   const calculateDurationMs = (history: TrajectoryHistoryEntry[]): number => {
     if (!history || history.length === 0 || !history[0].timestamp) return 0;
     
-    const startTime = new Date(history[0].timestamp);
-    const endTime = new Date(history[history.length - 1].timestamp);
+    const startTime = new Date(history[0].timestamp || new Date());
+    const endTime = new Date(history[history.length - 1].timestamp || new Date());
     return endTime.getTime() - startTime.getTime();
   };
 
