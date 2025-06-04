@@ -6,6 +6,7 @@ import { TrajectoryItem } from '../../types/share';
 import { TrajectoryHistoryEntry } from '../../types/trajectory';
 import JsonVisualizer from '../json-visualizer/JsonVisualizer';
 import { DEFAULT_JSONL_VIEWER_SETTINGS } from '../../config/jsonl-viewer-config';
+import CollapsableDiffPanel from './CollapsableDiffPanel';
 import {
   isAgentStateChange,
   isUserMessage,
@@ -328,6 +329,13 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
             
             {/* Timeline Content - scrollable */}
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar scrollbar-w-1.5 scrollbar-thumb-gray-200/75 dark:scrollbar-thumb-gray-700/75 scrollbar-track-transparent hover:scrollbar-thumb-gray-300/75 dark:hover:scrollbar-thumb-gray-600/75 scrollbar-thumb-rounded p-4">
+              {/* Collapsable Diff Panel */}
+              {entries[currentEntryIndex] && (
+                <CollapsableDiffPanel 
+                  instancePatch={entries[currentEntryIndex]?.instance?.patch}
+                  gitPatch={entries[currentEntryIndex]?.test_result?.git_patch}
+                />
+              )}
               {filteredTrajectoryItems.length > 0 ? (
                 <div className="flex flex-col items-center gap-4">
                   {filteredTrajectoryItems.map((item, index) => {
@@ -395,7 +403,20 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
           </div>
           <div className="flex-1 overflow-y-auto scrollbar scrollbar-w-1.5 scrollbar-thumb-gray-200/75 dark:scrollbar-thumb-gray-700/75 scrollbar-track-transparent hover:scrollbar-thumb-gray-300/75 dark:hover:scrollbar-thumb-gray-600/75 scrollbar-thumb-rounded p-3">
             {currentEntryWithoutHistory ? (
-              <JsonVisualizer data={currentEntryWithoutHistory} initialExpanded={true} />
+              <div className="space-y-4">
+                {/* File Changes Summary */}
+                {(entries[currentEntryIndex]?.instance?.patch || entries[currentEntryIndex]?.test_result?.git_patch) && (
+                  <div className="bg-gray-50/50 dark:bg-gray-700/50 rounded px-2 py-1.5">
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">File Changes</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      View file changes in the collapsable panel above the trajectory.
+                    </p>
+                  </div>
+                )}
+
+                {/* JSON Visualizer for other metadata */}
+                <JsonVisualizer data={currentEntryWithoutHistory} initialExpanded={true} />
+              </div>
             ) : (
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 No metadata available

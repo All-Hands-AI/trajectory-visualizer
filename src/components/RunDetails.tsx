@@ -138,9 +138,11 @@ const RunDetails: React.FC<RunDetailsProps> = ({ owner, repo, run, initialConten
     if (timelineEntries && timelineEntries.length > selectedStepIndex) {
       const entry = timelineEntries[selectedStepIndex];
       
-      // Show file changes in an alert for now
-      if (entry.path) {
-        alert(`File: ${entry.path}\n\nChanges are not available in this view. This would typically show a diff of the changes made to the file.`);
+      // If the entry has a path and metadata with file edit information, we can show it
+      if (entry.path && entry.metadata) {
+        // The diff viewer is now shown directly in the timeline entry via the EntryMetadataPanel
+        // We just need to ensure the entry is selected
+        setSelectedStepIndex(selectedStepIndex);
       }
     }
   }, [getTimelineEntries, selectedStepIndex]);
