@@ -13,6 +13,7 @@ export const CommandActionComponent: React.FC<CommandActionProps> = ({ command }
     <TrajectoryCard 
       className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
       originalJson={command}
+      timestamp={command.timestamp}
     >
       <TrajectoryCard.Header className="bg-green-100 dark:bg-green-800/50 text-green-800 dark:text-green-100">Assistant Shell Action</TrajectoryCard.Header>
       <TrajectoryCard.Body>

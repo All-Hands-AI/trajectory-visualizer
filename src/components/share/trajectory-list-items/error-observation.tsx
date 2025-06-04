@@ -12,6 +12,7 @@ export const ErrorObservationComponent: React.FC<ErrorObservationProps> = ({ obs
     <TrajectoryCard 
       className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
       originalJson={observation}
+      timestamp={observation.timestamp}
     >
       <TrajectoryCard.Header className="bg-red-100 dark:bg-red-800/50 text-red-800 dark:text-red-100">Error</TrajectoryCard.Header>
       <TrajectoryCard.Body>

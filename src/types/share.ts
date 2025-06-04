@@ -39,6 +39,7 @@ export interface UserMessage {
   action: "message";
   source?: "user";
   content?: string;
+  timestamp?: string;
   args?: {
     content: string;
     images_urls: string[];
