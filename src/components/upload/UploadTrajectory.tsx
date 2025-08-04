@@ -18,7 +18,13 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
           (('action' in content[0] && 'source' in content[0]) || 
            ('observation' in content[0] && 'source' in content[0]))) {
         console.log('Detected OpenHands trajectory format');
-        return content;
+        
+        // Convert to JSONL format for the JsonlViewer
+        const jsonlContent = JSON.stringify({ history: content });
+        return {
+          jsonlContent,
+          fileType: 'jsonl'
+        };
       }
       return content;
     }
@@ -26,13 +32,25 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
     // Check if it has entries array (sample-trajectory.json format)
     if (content.entries && Array.isArray(content.entries)) {
       console.log('Detected entries array format');
-      return content;
+      
+      // Convert to JSONL format for the JsonlViewer
+      const jsonlContent = JSON.stringify({ history: content.entries });
+      return {
+        jsonlContent,
+        fileType: 'jsonl'
+      };
     }
     
     // Check if it has history array (trajectory-visualizer format)
     if (content.history && Array.isArray(content.history)) {
       console.log('Detected history array format');
-      return content;
+      
+      // Already in the right format, just convert to JSONL
+      const jsonlContent = JSON.stringify(content);
+      return {
+        jsonlContent,
+        fileType: 'jsonl'
+      };
     }
     
     // If it's not in a recognized format, return as is and let the converter handle it
@@ -69,8 +87,16 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
         // Process the trajectory based on its format
         const processedTrajectory = processOpenHandsTrajectory(content);
         
+        // Check if we've converted to JSONL format
+        if (processedTrajectory && typeof processedTrajectory === 'object' && 'jsonlContent' in processedTrajectory) {
+          console.log('Using JSONL viewer for OpenHands trajectory');
+          onUpload({
+            content: processedTrajectory
+          });
+          setIsProcessing(false);
+        }
         // For large trajectories, add a small delay to allow the UI to update
-        if (Array.isArray(processedTrajectory) && processedTrajectory.length > 500) {
+        else if (Array.isArray(processedTrajectory) && processedTrajectory.length > 500) {
           console.log(`Processing large trajectory with ${processedTrajectory.length} items...`);
           setTimeout(() => {
             onUpload({
