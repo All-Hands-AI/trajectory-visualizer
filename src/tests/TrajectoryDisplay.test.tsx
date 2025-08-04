@@ -158,9 +158,13 @@ This approach ensures a thorough and methodical problem-solving process.`;
       />
     );
 
-    // Instead of checking for the specific thought text, let's check that the title is displayed
-    const titleElement = screen.getByText('Thinking about the problem');
+    // Check for the title element - it's "Thought" in the UI
+    const titleElement = screen.getByText(/Thought/i);
     expect(titleElement).toBeInTheDocument();
+    
+    // Check for the content of the thought in the document
+    const thoughtContent = document.body.textContent;
+    expect(thoughtContent).toContain('I need to analyze this problem carefully');
     
     // Check that there are no elements with the line-clamp-1 class
     const lineClampElements = document.querySelectorAll('.line-clamp-1');

@@ -54,8 +54,8 @@ describe('Simple Screenshot Test', () => {
     // Check if the timeline is rendered with entries
     expect(screen.queryByText('No timeline entries available')).not.toBeInTheDocument();
     
-    // Check for the test message
-    expect(screen.getByText('This is a test message with a screenshot')).toBeInTheDocument();
+    // Check for the test message - use getAllByText since it appears in both the title and content
+    expect(screen.getAllByText('This is a test message with a screenshot').length).toBeGreaterThan(0);
     
     // Check for the screenshot
     const screenshot = screen.queryByAltText('Screenshot');

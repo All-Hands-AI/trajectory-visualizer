@@ -33,12 +33,8 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
     if (content.entries && Array.isArray(content.entries)) {
       console.log('Detected entries array format');
       
-      // Convert to JSONL format for the JsonlViewer
-      const jsonlContent = JSON.stringify({ history: content.entries });
-      return {
-        jsonlContent,
-        fileType: 'jsonl'
-      };
+      // Return the data directly for the trajectory viewer
+      return content;
     }
     
     // Check if it has history array (trajectory-visualizer format)
@@ -119,6 +115,7 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
       } catch (error) {
         console.error('Failed to process file:', error);
         setError(`Failed to parse the trajectory file: ${error instanceof Error ? error.message : 'Unknown error'}. Please make sure it is a valid JSON file.`);
+        window.alert('Failed to parse the trajectory file. Please make sure it is a valid JSON file.');
         setIsProcessing(false);
       }
     };
@@ -205,7 +202,7 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
                 }
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                Supports OpenHands trajectory JSON files
+                Supports OpenHands trajectory JSON files, only .json files are supported
               </p>
             </>
           )}

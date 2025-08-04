@@ -130,7 +130,7 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
       const entry: any = {
         type: getActionType(event.action),
         timestamp: event.timestamp || new Date().toISOString(),
-        title: `${event.action}: ${event.message || ''}`.trim(),
+        title: event.message || '',
         thought: event.args?.thought || event.cause,
         metadata: {},
         actorType: getActorType(event.source),
