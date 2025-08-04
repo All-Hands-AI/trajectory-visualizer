@@ -226,22 +226,27 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
         case 'finish':
           entry.type = 'message';
           
-          // Get content from args or message
-          let content = event.args?.content || event.message;
+          // Only use args.content for the actual content, not message
+          let content = event.args?.content;
           
-          // Check if this is a system prompt (contains <ROLE> tags)
-          if (content && content.includes('<ROLE>') && content.includes('</ROLE>')) {
-            // Create a hash of the content to check for duplicates
-            const contentHash = content.substring(0, 100); // Use first 100 chars as a simple hash
-            
-            // Skip if we've already seen this system prompt
-            if (systemPrompts.has(contentHash)) {
-              console.log('Skipping duplicate system prompt');
-              continue;
+          // Use message only for the title if we don't have content
+          if (!content) {
+            entry.title = event.message || event.action;
+          } else {
+            // Check if this is a system prompt (contains <ROLE> tags)
+            if (content.includes('<ROLE>') && content.includes('</ROLE>')) {
+              // Create a hash of the content to check for duplicates
+              const contentHash = content.substring(0, 100); // Use first 100 chars as a simple hash
+              
+              // Skip if we've already seen this system prompt
+              if (systemPrompts.has(contentHash)) {
+                console.log('Skipping duplicate system prompt');
+                continue;
+              }
+              
+              // Add to our set of seen system prompts
+              systemPrompts.add(contentHash);
             }
-            
-            // Add to our set of seen system prompts
-            systemPrompts.add(contentHash);
           }
           
           entry.content = content;
@@ -361,8 +366,9 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
           entry.type = 'error';
           if (event.content) {
             entry.content = event.content;
-          } else if (event.message) {
-            entry.content = event.message;
+            entry.title = event.message || 'Error';
+          } else {
+            entry.title = event.message || 'Error';
           }
           break;
           
@@ -383,22 +389,27 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
         case 'recall':
           entry.type = 'message';
           
-          // Get content from content or message
-          let content = event.content || event.message;
+          // Only use content field for the actual content, not message
+          let content = event.content;
           
-          // Check if this is a system prompt (contains <ROLE> tags)
-          if (content && content.includes('<ROLE>') && content.includes('</ROLE>')) {
-            // Create a hash of the content to check for duplicates
-            const contentHash = content.substring(0, 100); // Use first 100 chars as a simple hash
-            
-            // Skip if we've already seen this system prompt
-            if (systemPrompts.has(contentHash)) {
-              console.log('Skipping duplicate system prompt');
-              continue;
+          // Use message only for the title if we don't have content
+          if (!content) {
+            entry.title = event.message || event.observation;
+          } else {
+            // Check if this is a system prompt (contains <ROLE> tags)
+            if (content.includes('<ROLE>') && content.includes('</ROLE>')) {
+              // Create a hash of the content to check for duplicates
+              const contentHash = content.substring(0, 100); // Use first 100 chars as a simple hash
+              
+              // Skip if we've already seen this system prompt
+              if (systemPrompts.has(contentHash)) {
+                console.log('Skipping duplicate system prompt');
+                continue;
+              }
+              
+              // Add to our set of seen system prompts
+              systemPrompts.add(contentHash);
             }
-            
-            // Add to our set of seen system prompts
-            systemPrompts.add(contentHash);
           }
           
           entry.content = content;
@@ -457,7 +468,7 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
         type: 'message',
         timestamp: event.timestamp || new Date().toISOString(),
         title: event.message,
-        content: event.message,
+        content: '', // Don't use message as content
         actorType: getActorType(event.source),
         command: '',
         path: ''
