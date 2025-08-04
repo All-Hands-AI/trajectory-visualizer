@@ -82,7 +82,10 @@ export const TimelineStep: React.FC<TimelineStepProps> = memo(({
               {/* Regular content */}
               {entry.content && (
                 <div className="text-xs text-gray-600 dark:text-gray-300 overflow-hidden">
-                  <MarkdownContent content={entry.content} />
+                  <MarkdownContent 
+                    content={entry.content} 
+                    maxHeight={entry.content.length > 1000 ? "200px" : undefined}
+                  />
                 </div>
               )}
               

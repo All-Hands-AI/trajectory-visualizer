@@ -14,4 +14,4 @@ export const colorClasses = {
   rose: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
 } as const;
 
-export const markdownStyles = 'prose prose-sm dark:prose-invert max-w-none prose-p:my-0.5 prose-headings:my-1 prose-ul:my-0.5 prose-ol:my-0.5 prose-pre:my-1 prose-pre:bg-gray-50 dark:prose-pre:bg-gray-800 prose-pre:rounded prose-pre:p-2 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:rounded prose-code:px-1 prose-code:font-mono'; 
+export const markdownStyles = 'prose prose-sm dark:prose-invert max-w-none prose-p:my-0.5 prose-headings:my-1 prose-ul:my-0.5 prose-ol:my-0.5 prose-pre:my-1 prose-pre:bg-gray-50 dark:prose-pre:bg-gray-800 prose-pre:rounded prose-pre:p-2 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:rounded prose-code:px-1 prose-code:font-mono prose-blockquote:my-1 prose-blockquote:pl-2 prose-blockquote:border-l-2 prose-blockquote:border-gray-300 dark:prose-blockquote:border-gray-600'; 

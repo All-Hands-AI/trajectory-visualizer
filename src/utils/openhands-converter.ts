@@ -115,6 +115,9 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
     command: '',
     path: ''
   } as TimelineEntry];
+  
+  // Track system prompts to avoid duplication
+  const systemPrompts = new Set();
 
   for (const event of events) {
     // Skip environment state changes that don't have a message
@@ -222,11 +225,26 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
         case 'recall':
         case 'finish':
           entry.type = 'message';
-          if (event.args?.content) {
-            entry.content = event.args.content;
-          } else if (event.message) {
-            entry.content = event.message;
+          
+          // Get content from args or message
+          let content = event.args?.content || event.message;
+          
+          // Check if this is a system prompt (contains <ROLE> tags)
+          if (content && content.includes('<ROLE>') && content.includes('</ROLE>')) {
+            // Create a hash of the content to check for duplicates
+            const contentHash = content.substring(0, 100); // Use first 100 chars as a simple hash
+            
+            // Skip if we've already seen this system prompt
+            if (systemPrompts.has(contentHash)) {
+              console.log('Skipping duplicate system prompt');
+              continue;
+            }
+            
+            // Add to our set of seen system prompts
+            systemPrompts.add(contentHash);
           }
+          
+          entry.content = content;
           break;
           
         default:
@@ -364,11 +382,26 @@ export function convertOpenHandsTrajectory(trajectory: OpenHandsEvent[] | { entr
         case 'condensation':
         case 'recall':
           entry.type = 'message';
-          if (event.content) {
-            entry.content = event.content;
-          } else if (event.message) {
-            entry.content = event.message;
+          
+          // Get content from content or message
+          let content = event.content || event.message;
+          
+          // Check if this is a system prompt (contains <ROLE> tags)
+          if (content && content.includes('<ROLE>') && content.includes('</ROLE>')) {
+            // Create a hash of the content to check for duplicates
+            const contentHash = content.substring(0, 100); // Use first 100 chars as a simple hash
+            
+            // Skip if we've already seen this system prompt
+            if (systemPrompts.has(contentHash)) {
+              console.log('Skipping duplicate system prompt');
+              continue;
+            }
+            
+            // Add to our set of seen system prompts
+            systemPrompts.add(contentHash);
           }
+          
+          entry.content = content;
           break;
           
         case 'null':
