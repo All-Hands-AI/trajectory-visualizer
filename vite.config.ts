@@ -14,13 +14,7 @@ export default defineConfig({
       'Access-Control-Allow-Credentials': 'true',
     },
     cors: true,
-    allowedHosts: [
-      'localhost',
-      '127.0.0.1',
-      '*.prod-runtime.all-hands.dev',
-      'work-1-ztlhvdkgmbpjtzat.prod-runtime.all-hands.dev',
-      'work-2-ztlhvdkgmbpjtzat.prod-runtime.all-hands.dev'
-    ],
+    allowedHosts: 'all',
   },
   build: {
     outDir: 'build',

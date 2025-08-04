@@ -14,6 +14,13 @@ export interface TrajectoryHistoryEntry {
     path?: string;
     command?: string;
     thought?: string;
+    code?: string;
+    old_str?: string;
+    new_str?: string;
+    old_content?: string;
+    new_content?: string;
+    file_text?: string;
+    [key: string]: any;
   };
   // Sample format
   type?: string;

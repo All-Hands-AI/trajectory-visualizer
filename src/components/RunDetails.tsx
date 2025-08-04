@@ -50,12 +50,28 @@ const RunDetails: React.FC<RunDetailsProps> = ({ owner, repo, run, initialConten
     try {
       // Check if this is an OpenHands trajectory
       if (artifactContent?.content?.trajectory) {
+        console.log('Converting OpenHands trajectory from artifact content');
         return convertOpenHandsTrajectory(artifactContent.content.trajectory);
       }
+      
       // Check if this is an uploaded trajectory file
       if (artifactContent?.content?.fileType === 'trajectory' && artifactContent?.content?.trajectoryData) {
+        console.log('Converting uploaded trajectory data');
+        
+        // Log the first few items to help with debugging
+        if (Array.isArray(artifactContent.content.trajectoryData)) {
+          console.log(`Trajectory has ${artifactContent.content.trajectoryData.length} items`);
+          if (artifactContent.content.trajectoryData.length > 0) {
+            console.log('First item sample:', JSON.stringify(artifactContent.content.trajectoryData[0]).substring(0, 200) + '...');
+          }
+        } else {
+          console.log('Trajectory data structure:', Object.keys(artifactContent.content.trajectoryData));
+        }
+        
         return convertOpenHandsTrajectory(artifactContent.content.trajectoryData);
       }
+      
+      // Handle other formats
       return artifactContent?.content?.history || artifactContent?.content?.jsonlHistory || [];
     } catch (error) {
       console.error('Failed to convert trajectory:', error);
@@ -63,7 +79,7 @@ const RunDetails: React.FC<RunDetailsProps> = ({ owner, repo, run, initialConten
         type: 'error',
         timestamp: new Date().toISOString(),
         title: 'Error Processing Trajectory',
-        content: `Failed to process trajectory: ${error instanceof Error ? error.message : 'Unknown error'}. The trajectory visualizer accepts the following formats:\n\n1. Array of events with action, args, timestamp, etc.\n2. Object with "entries" array containing events\n3. Object with "test_result.git_patch" containing a git patch`,
+        content: `Failed to process trajectory: ${error instanceof Error ? error.message : 'Unknown error'}. The trajectory visualizer accepts the following formats:\n\n1. Array of events with action, args, timestamp, etc.\n2. Object with "entries" array containing events\n3. Object with "history" array containing events\n4. Object with "test_result.git_patch" containing a git patch`,
         actorType: 'System',
         command: '',
         path: ''
@@ -257,6 +273,33 @@ const RunDetails: React.FC<RunDetailsProps> = ({ owner, repo, run, initialConten
   // Check if we're dealing with a trajectory file
   if (artifactContent?.content?.fileType === 'trajectory' && artifactContent?.content?.trajectoryData) {
     console.log('Rendering trajectory with data:', JSON.stringify(artifactContent.content.trajectoryData).substring(0, 100) + '...');
+    
+    // Log more detailed information about the trajectory
+    if (Array.isArray(artifactContent.content.trajectoryData)) {
+      console.log(`Trajectory has ${artifactContent.content.trajectoryData.length} items`);
+      
+      // Count action types
+      const actionTypes = artifactContent.content.trajectoryData
+        .filter((item: any) => 'action' in item)
+        .reduce((acc: Record<string, number>, item: any) => {
+          const action = item.action;
+          acc[action] = (acc[action] || 0) + 1;
+          return acc;
+        }, {});
+      
+      console.log('Action types:', actionTypes);
+      
+      // Count observation types
+      const observationTypes = artifactContent.content.trajectoryData
+        .filter((item: any) => 'observation' in item)
+        .reduce((acc: Record<string, number>, item: any) => {
+          const observation = item.observation;
+          acc[observation] = (acc[observation] || 0) + 1;
+          return acc;
+        }, {});
+      
+      console.log('Observation types:', observationTypes);
+    }
   }
 
   // Use our helper function to get the timeline entries

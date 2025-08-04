@@ -295,7 +295,7 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
     const location = useLocation();
     const [uploadedContent, setUploadedContent] = useState<UploadContent | null>(null);
     
-    // Check if we should restore from localStorage on initial load
+    // Check for URL parameters and localStorage on initial load
     useEffect(() => {
       // Keep track of load count to prevent cycles
       navigationRef.current.loadCount++;
@@ -311,6 +311,28 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
         console.log('Initial navigation check');
         navigationRef.current.initialNavigationDone = true;
         
+        // Check for data parameter in URL
+        const searchParams = new URLSearchParams(location.search);
+        const dataParam = searchParams.get('data');
+        
+        if (dataParam) {
+          try {
+            // Decode and parse the data parameter
+            const decodedData = atob(decodeURIComponent(dataParam));
+            const parsedData = JSON.parse(decodedData);
+            console.log('Found trajectory data in URL:', parsedData);
+            
+            // Set the uploaded content
+            setUploadedContent(parsedData);
+            
+            // Clear the URL parameter to avoid reloading the same data
+            navigate(location.pathname, { replace: true });
+            return;
+          } catch (error) {
+            console.error('Failed to parse data parameter:', error);
+          }
+        }
+        
         // Only redirect if we're at the root path and have no owner/repo
         if ((!owner || !repo) && location.pathname === '/') {
           const savedRepo = localStorage.getItem('selected_repository');
@@ -325,7 +347,7 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
           }
         }
       }
-    }, [owner, repo, navigate, location.pathname]);
+    }, [owner, repo, navigate, location.pathname, location.search]);
     
     // Handle repository selection
     const handleRepositorySelect = (newOwner: string, newRepo: string) => {
