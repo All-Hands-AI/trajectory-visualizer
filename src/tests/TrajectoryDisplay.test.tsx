@@ -221,8 +221,15 @@ This approach ensures a thorough and methodical problem-solving process.`;
     // Create mock upload content with the complex trajectory
     const uploadContent: UploadContent = {
       content: {
-        trajectoryData: complexTrajectory,
-        fileType: 'trajectory'
+        history: complexTrajectory.map(item => ({
+          type: 'message',
+          timestamp: item.timestamp || new Date().toISOString(),
+          title: item.message || '',
+          content: item.content || '',
+          actorType: item.source === 'user' ? 'User' : item.source === 'agent' ? 'Assistant' : 'System',
+          command: item.args?.command || '',
+          path: item.args?.path || ''
+        }))
       }
     };
     

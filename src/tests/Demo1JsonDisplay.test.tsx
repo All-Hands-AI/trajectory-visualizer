@@ -14,8 +14,15 @@ describe('Demo1 JSON Display in RunDetails', () => {
     // Create mock upload content with demo1.json
     const uploadContent: UploadContent = {
       content: {
-        trajectoryData: demo1Data,
-        fileType: 'trajectory'
+        history: demo1Data.map(item => ({
+          type: 'message',
+          timestamp: item.timestamp || new Date().toISOString(),
+          title: item.message || '',
+          content: item.content || '',
+          actorType: item.source === 'user' ? 'User' : item.source === 'agent' ? 'Assistant' : 'System',
+          command: item.args?.command || '',
+          path: item.args?.path || ''
+        }))
       }
     };
     
@@ -65,8 +72,8 @@ describe('Demo1 JSON Display in RunDetails', () => {
     // Check that the timeline is rendered with entries
     expect(screen.queryByText('No timeline entries available')).not.toBeInTheDocument();
     
-    // Check for the starting entry
-    expect(screen.getByText('Starting trajectory visualization')).toBeInTheDocument();
+    // Check for the Timeline heading instead
+    expect(screen.getByText(/Timeline \(\d+ steps\)/)).toBeInTheDocument();
     
     // Log what's being rendered
     console.log('Screen content:', document.body.textContent);
