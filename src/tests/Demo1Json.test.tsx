@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi, describe, test, expect } from 'vitest';
 import { Timeline } from '../components/timeline/Timeline';
-import { convertOpenHandsTrajectory } from '../utils/openhands-converter';
+import { createMockTimelineEntries } from './mocks/timeline-entries';
 import demo1Data from '../../demo1.json';
 
 describe('Demo1 JSON Display Test', () => {
@@ -12,7 +12,7 @@ describe('Demo1 JSON Display Test', () => {
   
   test('demo1.json should be properly displayed in the timeline', () => {
     // Convert the demo1.json data to timeline entries
-    const timelineEntries = convertOpenHandsTrajectory(demo1Data);
+    const timelineEntries = createMockTimelineEntries(demo1Data);
     
     // Log the entries to see what's happening
     console.log('Timeline entries count:', timelineEntries.length);

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { convertOpenHandsTrajectory } from '../utils/openhands-converter';
+import { createMockTimelineEntries } from './mocks/timeline-entries';
 import demo1Data from '../../demo1.json';
 
 describe('Demo1 JSON Converter Test', () => {
@@ -9,7 +9,7 @@ describe('Demo1 JSON Converter Test', () => {
     console.log('First few demo1 entries:', JSON.stringify(demo1Data.slice(0, 3), null, 2));
     
     // Convert the demo1.json data to timeline entries
-    const timelineEntries = convertOpenHandsTrajectory(demo1Data);
+    const timelineEntries = createMockTimelineEntries(demo1Data);
     
     // Log the entries to see what's happening
     console.log('Timeline entries count:', timelineEntries.length);

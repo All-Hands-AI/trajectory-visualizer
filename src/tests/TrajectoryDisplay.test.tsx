@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi, describe, test, expect } from 'vitest';
 import { Timeline } from '../components/timeline/Timeline';
-import { convertOpenHandsTrajectory } from '../utils/openhands-converter';
+import { createMockTimelineEntries } from './mocks/timeline-entries';
 import RunDetails from '../components/RunDetails';
 import { UploadContent } from '../types/upload';
 
@@ -47,7 +47,7 @@ describe('Trajectory Display Tests', () => {
     ];
 
     // Convert the trajectory to timeline entries
-    const timelineEntries = convertOpenHandsTrajectory(trajectoryWithLongCommand);
+    const timelineEntries = createMockTimelineEntries(trajectoryWithLongCommand);
     
     // Render the Timeline component with the entries
     render(
@@ -98,7 +98,7 @@ Line 5: Results are available for review`;
     ];
 
     // Convert the trajectory to timeline entries
-    const timelineEntries = convertOpenHandsTrajectory(trajectoryWithLongObservation);
+    const timelineEntries = createMockTimelineEntries(trajectoryWithLongObservation);
     
     // Render the Timeline component with the entries
     render(
@@ -145,7 +145,7 @@ This approach ensures a thorough and methodical problem-solving process.`;
     ];
 
     // Convert the trajectory to timeline entries
-    const timelineEntries = convertOpenHandsTrajectory(trajectoryWithLongThought);
+    const timelineEntries = createMockTimelineEntries(trajectoryWithLongThought);
     
     // Render the Timeline component with the entries
     render(

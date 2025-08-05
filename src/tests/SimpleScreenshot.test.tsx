@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi, describe, test, expect } from 'vitest';
 import { Timeline } from '../components/timeline/Timeline';
-import { convertOpenHandsTrajectory } from '../utils/openhands-converter';
+import { createMockTimelineEntries } from './mocks/timeline-entries';
 
 describe('Simple Screenshot Test', () => {
   // Mock the formatTimelineDate function
@@ -32,7 +32,7 @@ describe('Simple Screenshot Test', () => {
     ];
     
     // Convert the simple trajectory to timeline entries
-    const timelineEntries = convertOpenHandsTrajectory(simpleTrajectory);
+    const timelineEntries = createMockTimelineEntries(simpleTrajectory);
     
     // Verify we have entries
     expect(timelineEntries.length).toBeGreaterThan(0);

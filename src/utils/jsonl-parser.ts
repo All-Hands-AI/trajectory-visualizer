@@ -1,5 +1,4 @@
 import { TimelineEntry } from '../components/timeline/types';
-import { convertOpenHandsTrajectory } from './openhands-converter';
 import { TrajectoryData } from '../types/trajectory';
 
 export type JsonlEntry = TrajectoryData;
@@ -54,13 +53,14 @@ export function convertJsonlEntryToTimeline(entry: JsonlEntry): TimelineEntry[] 
   }
 
   try {
-    return convertOpenHandsTrajectory({ history: entry.history });
+    // Simply return the history array as it's already in the correct format from the eval backend
+    return entry.history;
   } catch (error) {
     return [{
       type: 'error',
       timestamp: new Date().toISOString(),
-      title: 'Error Converting History',
-      content: `Failed to convert history: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      title: 'Error Processing History',
+      content: `Failed to process history: ${error instanceof Error ? error.message : 'Unknown error'}`,
       actorType: 'System',
       command: '',
       path: ''
