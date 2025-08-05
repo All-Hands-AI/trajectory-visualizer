@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 12000,
     host: '0.0.0.0',
+    allowedHosts: ['work-1-ywgwxiwbtfgizmkl.prod-runtime.all-hands.dev', 'localhost'],
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
@@ -14,7 +15,6 @@ export default defineConfig({
       'Access-Control-Allow-Credentials': 'true',
     },
     cors: true,
-    allowedHosts: 'all',
   },
   build: {
     outDir: 'build',

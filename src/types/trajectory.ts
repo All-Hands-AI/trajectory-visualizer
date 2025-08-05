@@ -1,4 +1,4 @@
-import { TimelineEntry } from '../components/timeline/types';
+
 
 // Common types for trajectory data
 export interface TrajectoryHistoryEntry {
@@ -57,22 +57,3 @@ export function getActorType(source: string | undefined): 'User' | 'Assistant' |
   return 'Assistant';
 }
 
-export function mapEntryTypeToTimelineType(type: string): TimelineEntry['type'] {
-  switch (type) {
-    case 'command':
-      return 'command';
-    case 'edit':
-      return 'edit';
-    case 'search':
-      return 'search';
-    case 'error':
-      return 'error';
-    case 'message':
-      return 'message';
-    case 'thought':
-      return 'message'; // Thoughts are displayed as messages with special styling
-    default:
-      // Fallback to message type for unknown types
-      return 'message';
-  }
-}
