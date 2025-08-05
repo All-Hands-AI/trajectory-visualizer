@@ -16,7 +16,7 @@ export function createMockTimelineEntries(testData: any[]): TimelineEntry[] {
     path: ''
   }];
 
-  testData.forEach((item, index) => {
+  testData.forEach((item) => {
     // Create a basic timeline entry
     const entry: TimelineEntry = {
       type: 'message',

@@ -53,8 +53,19 @@ export function convertJsonlEntryToTimeline(entry: JsonlEntry): TimelineEntry[] 
   }
 
   try {
-    // Simply return the history array as it's already in the correct format from the eval backend
-    return entry.history;
+    // Convert the history array to the correct format
+    return entry.history.map(item => {
+      return {
+        type: (item.type as "error" | "search" | "message" | "command" | "edit") || 'message',
+        timestamp: item.timestamp || new Date().toISOString(),
+        title: item.message || '',
+        content: item.content || '',
+        actorType: item.actorType || (item.source ? (item.source === 'user' ? 'User' : item.source === 'agent' ? 'Assistant' : 'System') : 'System'),
+        command: item.command || '',
+        path: item.path || '',
+        metadata: {}
+      } as TimelineEntry;
+    });
   } catch (error) {
     return [{
       type: 'error',
