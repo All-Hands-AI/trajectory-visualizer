@@ -290,6 +290,72 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
     loadCount: 0
   });
   
+  // Function to process trajectory data based on its format
+  const processTrajectoryData = (data: any): UploadContent => {
+    // Check if it's an array (OpenHands trajectory format)
+    if (Array.isArray(data)) {
+      // Check if it has OpenHands specific fields
+      if (data.length > 0 && 
+          (('action' in data[0] && 'source' in data[0]) || 
+           ('observation' in data[0] && 'source' in data[0]))) {
+        console.log('Detected OpenHands trajectory format');
+        
+        // Convert to JSONL format for the JsonlViewer
+        const jsonlContent = JSON.stringify({ history: data });
+        return {
+          content: {
+            jsonlContent,
+            fileType: 'jsonl'
+          }
+        };
+      }
+      
+      // For other array formats
+      return {
+        content: {
+          trajectoryData: data,
+          fileType: 'trajectory'
+        }
+      };
+    }
+    
+    // Check if it has entries array (sample-trajectory.json format)
+    if (data.entries && Array.isArray(data.entries)) {
+      console.log('Detected entries array format');
+      
+      // Return the data directly for the trajectory viewer
+      return {
+        content: {
+          trajectoryData: data,
+          fileType: 'trajectory'
+        }
+      };
+    }
+    
+    // Check if it has history array (trajectory-visualizer format)
+    if (data.history && Array.isArray(data.history)) {
+      console.log('Detected history array format');
+      
+      // Already in the right format, just convert to JSONL
+      const jsonlContent = JSON.stringify(data);
+      return {
+        content: {
+          jsonlContent,
+          fileType: 'jsonl'
+        }
+      };
+    }
+    
+    // If it's not in a recognized format, return as is
+    console.log('Unknown format, passing as trajectory data');
+    return {
+      content: {
+        trajectoryData: data,
+        fileType: 'trajectory'
+      }
+    };
+  };
+
   const MainContent: React.FC = () => {
     const { owner, repo } = useParams();
     const navigate = useNavigate();
@@ -313,10 +379,12 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
         console.log('Initial navigation check');
         navigationRef.current.initialNavigationDone = true;
         
-        // Check for data parameter in URL
+        // Check for URL parameters
         const searchParams = new URLSearchParams(location.search);
         const dataParam = searchParams.get('data');
+        const fileUrlParam = searchParams.get('fileUrl');
         
+        // Process embedded data parameter
         if (dataParam) {
           try {
             // Decode and parse the data parameter
@@ -333,6 +401,72 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
           } catch (error) {
             console.error('Failed to parse data parameter:', error);
           }
+        }
+        
+        // Process fileUrl parameter - fetch trajectory from external URL
+        if (fileUrlParam) {
+          console.log('Found fileUrl parameter, fetching trajectory from:', fileUrlParam);
+          
+          // Show loading indicator
+          setIsLoadingTrajectory(true);
+          
+          // Fetch the trajectory file from the provided URL
+          fetch(fileUrlParam, {
+            mode: 'cors', // Enable CORS
+            headers: {
+              'Accept': 'application/json'
+            }
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`Failed to fetch trajectory: ${response.status} ${response.statusText}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('Successfully fetched trajectory data from URL');
+              
+              // Process the trajectory data
+              const processedData = processTrajectoryData(data);
+              setUploadedContent(processedData);
+            })
+            .catch(error => {
+              console.error('Error fetching trajectory from URL:', error);
+              
+              // If direct fetch fails, try using a CORS proxy as fallback
+              console.log('Attempting to fetch via CORS proxy...');
+              const proxyUrl = `https://cors-anywhere.herokuapp.com/${fileUrlParam}`;
+              
+              return fetch(proxyUrl, {
+                headers: {
+                  'Accept': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest' // Required by some CORS proxies
+                }
+              })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error(`Proxy fetch failed: ${response.status} ${response.statusText}`);
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  console.log('Successfully fetched trajectory data via proxy');
+                  const processedData = processTrajectoryData(data);
+                  setUploadedContent(processedData);
+                })
+                .catch(proxyError => {
+                  console.error('Proxy fetch also failed:', proxyError);
+                  alert(`Failed to load trajectory from URL: ${error.message}\nProxy attempt also failed: ${proxyError.message}`);
+                  throw proxyError; // Re-throw to trigger the finally block
+                });
+            })
+            .finally(() => {
+              setIsLoadingTrajectory(false);
+              // Clear the URL parameter to avoid reloading the same data
+              navigate(location.pathname, { replace: true });
+            });
+          
+          return;
         }
         
         // Only redirect if we're at the root path and have no owner/repo
