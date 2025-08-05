@@ -273,7 +273,7 @@ const JsonlViewer: React.FC<JsonlViewerProps> = ({ content }) => {
         onSettingsChange={handleSettingsChange} 
       />
       
-      {/* Main content with sidebar, timeline, and metadata */}
+      {/* Main content with sidebar and metadata */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 overflow-hidden">
         {/* Sidebar with entries list */}
         <div className="flex-none lg:w-1/5 h-full max-h-full border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden flex flex-col">

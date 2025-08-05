@@ -15,6 +15,7 @@ export const EditObservationComponent: React.FC<EditObservationProps> = ({ obser
   
   const [showDiff, setShowDiff] = useState(hasChanges);
   const [showRawOutput, setShowRawOutput] = useState(!hasChanges);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // Determine language based on file extension
   const getLanguage = (path: string) => {
@@ -44,6 +45,19 @@ export const EditObservationComponent: React.FC<EditObservationProps> = ({ obser
   };
 
   const language = getLanguage(observation.extras.path);
+  
+  // Get the first 5 lines of content
+  const getPreviewContent = (content: string) => {
+    const lines = content.split('\n');
+    if (lines.length <= 5) return content;
+    return lines.slice(0, 5).join('\n');
+  };
+  
+  // Check if content has more than 5 lines
+  const hasMoreContent = observation.content.split('\n').length > 5;
+  
+  // Get preview or full content based on expanded state
+  const displayContent = isExpanded ? observation.content : getPreviewContent(observation.content);
 
   return (
     <TrajectoryCard 
@@ -87,7 +101,41 @@ export const EditObservationComponent: React.FC<EditObservationProps> = ({ obser
         {showRawOutput && (
           <div className="mt-3">
             <div className="text-xs font-medium mb-1">Raw Output:</div>
-            <CSyntaxHighlighter language={language}>{observation.content}</CSyntaxHighlighter>
+            <CSyntaxHighlighter language={language}>{displayContent}</CSyntaxHighlighter>
+            
+            {hasMoreContent && !isExpanded && (
+              <div className="flex justify-center mt-1">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(true);
+                  }}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  Show all {observation.content.split('\n').length} lines
+                </button>
+              </div>
+            )}
+            
+            {isExpanded && (
+              <div className="flex justify-center mt-1">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(false);
+                  }}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                  Show less
+                </button>
+              </div>
+            )}
           </div>
         )}
       </TrajectoryCard.Body>

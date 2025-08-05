@@ -12,8 +12,7 @@ import {
   isReadAction,
   isReadObservation,
   isEditAction,
-  isEditObservation,
-  trajectoryItemToTimelineEntry
+  isEditObservation
 } from "../../utils/share";
 import { CSyntaxHighlighter } from "../syntax-highlighter";
 import {
@@ -33,16 +32,12 @@ import {
 } from "./trajectory-list-items";
 import { TrajectoryCard } from "./trajectory-card";
 import { TrajectoryItem } from '../../types/share';
-import { TimelineEntry } from '../timeline/types';
-import { Timeline } from '../timeline/Timeline';
 
 interface TrajectoryListProps {
   trajectory: TrajectoryItem[];
 }
 
 export const TrajectoryList: React.FC<TrajectoryListProps> = ({ trajectory }) => {
-  const [selectedIndex, setSelectedIndex] = React.useState<number>(0);
-  
   const shouldDisplayItem = (item: TrajectoryItem): boolean => {
     // Filter out change_agent_state actions
     if ("action" in item && item.action === "change_agent_state" as const) {
@@ -61,55 +56,18 @@ export const TrajectoryList: React.FC<TrajectoryListProps> = ({ trajectory }) =>
   // Apply filtering to remove unwanted events
   const filteredTrajectory = trajectory.filter(shouldDisplayItem);
   
-  // Convert trajectory items to timeline entries
-  const timelineEntries = React.useMemo(() => {
-    return filteredTrajectory.map(item => trajectoryItemToTimelineEntry(item) as TimelineEntry);
-  }, [filteredTrajectory]);
-  
-  const formatTimelineDate = (entry: TimelineEntry): string => {
-    if (!entry.timestamp) {
-      return 'N/A';
-    }
-    return new Date(entry.timestamp).toLocaleTimeString();
-  };
-  
-  const handleCommandClick = (command: string): void => {
-    navigator.clipboard.writeText(command.replace(/^\$ /, ''));
-  };
-  
   return (
-    <div className="flex flex-col lg:flex-row gap-4 h-full">
-      {/* Timeline view */}
-      <div className="lg:w-1/3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
-        <div className="h-10 px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-            Timeline ({timelineEntries.length} steps)
+    <div className="flex flex-col h-full">
+      {/* Trajectory Items List */}
+      <div className="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            Trajectory Items ({filteredTrajectory.length} items)
           </h3>
         </div>
-        <div className="h-[calc(100%-2.5rem)]">
-          <Timeline
-            entries={timelineEntries}
-            selectedIndex={selectedIndex}
-            onStepSelect={setSelectedIndex}
-            onCommandClick={handleCommandClick}
-            formatTimelineDate={formatTimelineDate}
-            createdAt={new Date().toISOString()}
-          />
-        </div>
-      </div>
-      
-      {/* Detailed view */}
-      <div className="lg:w-2/3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
-        <div className="h-10 px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-            Run Details
-          </h3>
-        </div>
-        <div className="h-[calc(100%-2.5rem)] overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4">
           <div className="flex flex-col gap-4">
             {filteredTrajectory.map((item, index) => {
-              if (index !== selectedIndex) return null;
-              
               if (isAgentStateChange(item)) {
                 return <AgentStateChangeComponent key={index} state={item} />;
               } else if (isUserMessage(item)) {
@@ -139,6 +97,11 @@ export const TrajectoryList: React.FC<TrajectoryListProps> = ({ trajectory }) =>
               } else {
                 return (
                   <TrajectoryCard key={index}>
+                    <div className="mb-2">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        Item #{index + 1}
+                      </span>
+                    </div>
                     <CSyntaxHighlighter
                       language="json"
                       key={index}
@@ -149,6 +112,12 @@ export const TrajectoryList: React.FC<TrajectoryListProps> = ({ trajectory }) =>
                 );
               }
             })}
+            
+            {filteredTrajectory.length === 0 && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <p>No trajectory items to display.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

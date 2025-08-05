@@ -1,4 +1,4 @@
-import { TimelineEntry } from '../components/timeline/types';
+
 
 // Common types for trajectory data
 export interface TrajectoryHistoryEntry {
@@ -14,6 +14,13 @@ export interface TrajectoryHistoryEntry {
     path?: string;
     command?: string;
     thought?: string;
+    code?: string;
+    old_str?: string;
+    new_str?: string;
+    old_content?: string;
+    new_content?: string;
+    file_text?: string;
+    [key: string]: any;
   };
   // Sample format
   type?: string;
@@ -50,22 +57,3 @@ export function getActorType(source: string | undefined): 'User' | 'Assistant' |
   return 'Assistant';
 }
 
-export function mapEntryTypeToTimelineType(type: string): TimelineEntry['type'] {
-  switch (type) {
-    case 'command':
-      return 'command';
-    case 'edit':
-      return 'edit';
-    case 'search':
-      return 'search';
-    case 'error':
-      return 'error';
-    case 'message':
-      return 'message';
-    case 'thought':
-      return 'message'; // Thoughts are displayed as messages with special styling
-    default:
-      // Fallback to message type for unknown types
-      return 'message';
-  }
-}

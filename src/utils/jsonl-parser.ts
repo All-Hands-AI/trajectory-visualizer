@@ -1,5 +1,3 @@
-import { TimelineEntry } from '../components/timeline/types';
-import { convertOpenHandsTrajectory } from './openhands-converter';
 import { TrajectoryData } from '../types/trajectory';
 
 export type JsonlEntry = TrajectoryData;
@@ -35,35 +33,3 @@ export function parseJsonlFile(content: string): JsonlEntry[] {
   });
 }
 
-/**
- * Converts a JSONL entry to timeline entries
- * @param entry The JSONL entry with a history array
- * @returns An array of timeline entries
- */
-export function convertJsonlEntryToTimeline(entry: JsonlEntry): TimelineEntry[] {
-  if (!entry.history || !Array.isArray(entry.history)) {
-    return [{
-      type: 'error',
-      timestamp: new Date().toISOString(),
-      title: 'Invalid History Format',
-      content: 'The history field is missing or not an array',
-      actorType: 'System',
-      command: '',
-      path: ''
-    }];
-  }
-
-  try {
-    return convertOpenHandsTrajectory({ history: entry.history });
-  } catch (error) {
-    return [{
-      type: 'error',
-      timestamp: new Date().toISOString(),
-      title: 'Error Converting History',
-      content: `Failed to convert history: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      actorType: 'System',
-      command: '',
-      path: ''
-    }];
-  }
-}
