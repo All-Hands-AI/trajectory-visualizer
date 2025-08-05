@@ -4,9 +4,13 @@ import { UploadContent } from '../../types/upload';
 
 interface UploadTrajectoryProps {
   onUpload: (content: UploadContent) => void;
+  onUploadStart?: () => void;
 }
 
-export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) => {
+export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ 
+  onUpload,
+  onUploadStart
+}) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +63,11 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
 
     setIsProcessing(true);
     setError(null);
+    
+    // Notify parent component that upload has started
+    if (onUploadStart) {
+      onUploadStart();
+    }
     
     const file = acceptedFiles[0];
     console.log(`Processing file: ${file.name} (${file.size} bytes)`);
@@ -127,7 +136,7 @@ export const UploadTrajectory: React.FC<UploadTrajectoryProps> = ({ onUpload }) 
     };
 
     reader.readAsText(file);
-  }, [onUpload]);
+  }, [onUpload, onUploadStart]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

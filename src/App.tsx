@@ -4,6 +4,7 @@ import RepositorySelector from './components/RepositorySelector';
 import { WorkflowRunsList } from './components/workflow-runs';
 import RunDetails from './components/RunDetails';
 import RunDetailsSkeleton from './components/loading/RunDetailsSkeleton';
+import { TrajectoryLoadingOverlay } from './components/loading/TrajectoryLoadingOverlay';
 import { WorkflowRun } from './types';
 import { UploadTrajectory } from './components/upload/UploadTrajectory';
 import { EvaluationUpload } from './components/upload/EvaluationUpload';
@@ -294,6 +295,7 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [uploadedContent, setUploadedContent] = useState<UploadContent | null>(null);
+    const [isLoadingTrajectory, setIsLoadingTrajectory] = useState<boolean>(false);
     
     // Check for URL parameters and localStorage on initial load
     useEffect(() => {
@@ -365,11 +367,20 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
 
     // Handle trajectory upload
     const handleTrajectoryUpload = (content: UploadContent) => {
+      setIsLoadingTrajectory(false);
       setUploadedContent(content);
+    };
+    
+    // Handle trajectory upload start
+    const handleTrajectoryUploadStart = () => {
+      setIsLoadingTrajectory(true);
     };
     
     return (
       <div className="h-screen max-h-screen flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-900">
+        {/* Show loading overlay when processing trajectory */}
+        {isLoadingTrajectory && <TrajectoryLoadingOverlay />}
+        
         {/* Header */}
         <header className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b`}>
           <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -429,7 +440,10 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
                   <h2 className={`text-lg font-medium mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     Upload OpenHands Trajectory
                   </h2>
-                  <UploadTrajectory onUpload={handleTrajectoryUpload} />
+                  <UploadTrajectory 
+                    onUpload={handleTrajectoryUpload} 
+                    onUploadStart={handleTrajectoryUploadStart} 
+                  />
                 </div>
 
                 <div>
@@ -471,7 +485,10 @@ const App: React.FC<{ router?: boolean }> = ({ router = true }) => {
                   <h2 className={`text-lg font-medium mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     Or Upload OpenHands Trajectory
                   </h2>
-                  <UploadTrajectory onUpload={handleTrajectoryUpload} />
+                  <UploadTrajectory 
+                    onUpload={handleTrajectoryUpload} 
+                    onUploadStart={handleTrajectoryUploadStart} 
+                  />
                 </div>
                 
                 <div>
