@@ -55,12 +55,34 @@ Follow these steps to create a token:
 3. Copy the token and paste it into the application when prompted
 
 #### OpenHands Trajectory Visualization
-You can also visualize trajectories exported from OpenHands:
+You can visualize trajectories exported from OpenHands in several ways:
 
+##### Method 1: Upload a local file
 1. In OpenHands, use the download button next to the thumbs up/down buttons to export a trajectory
 2. In Trajectory Visualizer, click "Upload OpenHands Trajectory"
 3. Drag and drop the downloaded JSON file or click to select it
 4. The trajectory will be displayed in the timeline view
+
+##### Method 2: Load from a URL
+You can load a trajectory directly from a URL by adding the `fileUrl` parameter to the application URL:
+
+```
+https://trajectory-visualizer.example.com/?fileUrl=https://example.com/path/to/trajectory.json
+```
+
+This is useful for:
+- Sharing trajectories hosted in GitHub Gists
+- Loading trajectories from public storage services
+- Embedding the visualizer in other applications with pre-loaded data
+
+The application will automatically fetch and display the trajectory from the provided URL.
+
+##### Method 3: Embed data directly in URL
+For smaller trajectories, you can also embed the data directly in the URL using the `data` parameter with base64 encoding:
+
+```
+https://trajectory-visualizer.example.com/?data=eyJoaXN0b3J5IjpbLi4uXX0=
+```
 
 The timeline shows:
 - Actions (commands, edits, searches) in blue

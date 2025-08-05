@@ -1,0 +1,40 @@
+{
+  "history": [
+    {
+      "action": "command",
+      "content": "git status",
+      "timestamp": "2023-01-01T12:00:00Z",
+      "source": "user"
+    },
+    {
+      "observation": "output",
+      "content": "On branch main\nYour branch is up to date with 'origin/main'.\n\nNothing to commit, working tree clean",
+      "timestamp": "2023-01-01T12:00:01Z",
+      "source": "system"
+    },
+    {
+      "action": "command",
+      "content": "ls -la",
+      "timestamp": "2023-01-01T12:00:02Z",
+      "source": "user"
+    },
+    {
+      "observation": "output",
+      "content": "total 24\ndrwxr-xr-x 4 user user 4096 Jan 1 12:00 .\ndrwxr-xr-x 6 user user 4096 Jan 1 12:00 ..\ndrwxr-xr-x 8 user user 4096 Jan 1 12:00 .git\n-rw-r--r-- 1 user user  123 Jan 1 12:00 README.md\n-rw-r--r-- 1 user user  456 Jan 1 12:00 index.js\ndrwxr-xr-x 2 user user 4096 Jan 1 12:00 src",
+      "timestamp": "2023-01-01T12:00:03Z",
+      "source": "system"
+    },
+    {
+      "action": "command",
+      "content": "cat README.md",
+      "timestamp": "2023-01-01T12:00:04Z",
+      "source": "user"
+    },
+    {
+      "observation": "output",
+      "content": "# Sample Project\n\nThis is a sample project for testing the trajectory visualizer.",
+      "timestamp": "2023-01-01T12:00:05Z",
+      "source": "system"
+    }
+  ]
+}

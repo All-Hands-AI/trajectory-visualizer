@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trajectory Visualizer URL Loading Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trajectory Visualizer URL Loading Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Load from URL Parameter</h2>
+        <p>This test will open the Trajectory Visualizer with a fileUrl parameter pointing to a sample trajectory file.</p>
+        
+        <div>
+            <label for="trajectory-url">Trajectory URL:</label>
+            <input type="text" id="trajectory-url" value="/sample-url-trajectory.json" />
+        </div>
+        
+        <button id="test-url-btn">Test URL Loading</button>
+        
+        <div>
+            <p>Generated URL:</p>
+            <pre id="generated-url"></pre>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Load from Base64 Data Parameter</h2>
+        <p>This test will encode a simple trajectory as base64 and open the Trajectory Visualizer with it.</p>
+        
+        <button id="test-data-btn">Test Data Parameter</button>
+        
+        <div>
+            <p>Generated URL:</p>
+            <pre id="generated-data-url"></pre>
+        </div>
+    </div>
+    
+    <script>
+        // Sample trajectory data for the data parameter test
+        const sampleTrajectory = {
+            "history": [
+                {
+                    "action": "command",
+                    "content": "ls -la",
+                    "timestamp": "2023-01-01T12:00:00Z",
+                    "source": "user"
+                },
+                {
+                    "observation": "output",
+                    "content": "total 12\ndrwxr-xr-x 2 user user 4096 Jan 1 12:00 .\ndrwxr-xr-x 6 user user 4096 Jan 1 12:00 ..\n-rw-r--r-- 1 user user  123 Jan 1 12:00 example.txt",
+                    "timestamp": "2023-01-01T12:00:01Z",
+                    "source": "system"
+                }
+            ]
+        };
+        
+        // Get the base URL of the Trajectory Visualizer
+        const baseUrl = window.location.origin;
+        
+        // Test 1: URL Parameter
+        document.getElementById('test-url-btn').addEventListener('click', () => {
+            const trajectoryUrl = document.getElementById('trajectory-url').value;
+            const fullUrl = `${baseUrl}/?fileUrl=${encodeURIComponent(trajectoryUrl)}`;
+            document.getElementById('generated-url').textContent = fullUrl;
+            window.open(fullUrl, '_blank');
+        });
+        
+        // Test 2: Data Parameter
+        document.getElementById('test-data-btn').addEventListener('click', () => {
+            // Convert the sample trajectory to a base64 string
+            const jsonString = JSON.stringify(sampleTrajectory);
+            const base64Data = btoa(jsonString);
+            const fullUrl = `${baseUrl}/?data=${encodeURIComponent(base64Data)}`;
+            document.getElementById('generated-data-url').textContent = fullUrl;
+            window.open(fullUrl, '_blank');
+        });
+    </script>
+</body>
+</html>
